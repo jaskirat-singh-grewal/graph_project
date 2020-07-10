@@ -5,101 +5,247 @@ import Grid from "./Grid";
 class Graph extends Component {
   constructor(props) {
     super(props);
-    const ROW = 15,
-      COL = 15;
+    const ROW = 20,
+      COL = 35;
+    let wallPointer = false;
+    this.wallPointer = wallPointer;
     this.ROW = ROW;
     this.COL = COL;
+    const totalBoxes = ROW * COL;
     let box = Array(ROW * COL).fill(null);
     this.state = {
       boxContent: {
         box: box,
         startBoxIndex: null,
         endBoxIndex: null,
+        wallBoxes: [],
+        resultBoxes: [],
         transitionBoxes: [],
         coveredBoxes: [],
-        resultBoxes: [],
+        distance: 0,
       },
     };
   }
-  getEdgeBoxes(id, visited) {
+  getEdgeBoxes(id, visited, parent) {
     const ROW = this.ROW,
       COL = this.COL;
     const rowNum = Math.floor(id / COL);
     const colNum = id % COL;
     let arr = [];
-    if (rowNum != 0 && !visited[id - COL]) {
+    if (rowNum !== 0 && !visited[id - COL]) {
       arr.push(id - COL);
+      visited[id - COL] = true;
+      parent[id - COL] = id;
     }
-    if (rowNum != ROW - 1 && !visited[id + COL]) {
+    if (rowNum !== ROW - 1 && !visited[id + COL]) {
       arr.push(id + COL);
+      visited[id + COL] = true;
+      parent[id + COL] = id;
     }
-    if (colNum != 0 && !visited[id - 1]) {
+    if (colNum !== 0 && !visited[id - 1]) {
       arr.push(id - 1);
+      visited[id - 1] = true;
+      parent[id - 1] = id;
     }
-    if (colNum != COL - 1 && !visited[id + 1]) {
+    if (colNum !== COL - 1 && !visited[id + 1]) {
       arr.push(id + 1);
+      visited[id + 1] = true;
+      parent[id + 1] = id;
     }
+    //To consider corner edges.
+    /*     if (rowNum !== 0 && colNum !== 0 && !visited[id - COL - 1]) {
+      arr.push(id - COL - 1);
+      visited[id - COL - 1] = true;
+      parent[id - COL - 1] = id;
+    }
+    if (rowNum !== 0 && colNum !== COL - 1 && !visited[id - COL + 1]) {
+      arr.push(id - COL + 1);
+      visited[id - COL + 1] = true;
+      parent[id - COL + 1] = id;
+    }
+    if (rowNum !== ROW - 1 && colNum !== COL - 1 && !visited[id + COL + 1]) {
+      arr.push(id + COL + 1);
+      visited[id + COL + 1] = true;
+      parent[id + COL + 1] = id;
+    }
+    if (rowNum !== ROW - 1 && colNum !== 0 && !visited[id + COL - 1]) {
+      arr.push(id + COL - 1);
+      visited[id + COL - 1] = true;
+      parent[id + COL - 1] = id;
+    } */
     return arr;
   }
   boxClick(i) {
-    const boxContent = this.state.boxContent;
-    const box = boxContent.box;
-    const { startBoxIndex, endBoxIndex } = boxContent;
-    if (!startBoxIndex) {
+    const boxContent = this.state.boxContent,
+      box = boxContent.box,
+      { startBoxIndex, endBoxIndex, distance } = boxContent;
+    if (startBoxIndex === null) {
       this.setState({
         boxContent: {
           box: box,
           startBoxIndex: i,
           endBoxIndex: null,
+          wallBoxes: this.state.boxContent.wallBoxes,
+          resultBoxes: [],
           transitionBoxes: [],
           coveredBoxes: [],
-          resultBoxes: [],
+          distance: distance,
         },
       });
       console.log("From BoxClick startBoxIndex = ", this.state);
-    } else if (startBoxIndex && !endBoxIndex) {
+    } else if (startBoxIndex !== null && endBoxIndex === null) {
       if (startBoxIndex === i) {
         return;
       } else {
         this.setState({
           boxContent: {
             box: box,
-            startBoxIndex: this.state.boxContent.startBoxIndex,
+            startBoxIndex: startBoxIndex,
             endBoxIndex: i,
+            wallBoxes: this.state.boxContent.wallBoxes,
+            resultBoxes: [],
             transitionBoxes: [],
             coveredBoxes: [],
-            resultBoxes: [],
+            distance: distance,
           },
         });
         console.log("From boxClick endBoxIndex = ", this.state);
-      }
-    } else {
-      let qArr = [];
-      let totalBoxes = this.ROW * this.COL;
-      let visited = Array(totalBoxes).fill(false);
-      let prev = Array(totalBoxes).fill(null);
-      visited[boxContent.startBoxIndex] = true;
-      qArr.push(boxContent.startBoxIndex);
-      let currentBox;
-      while (!(qArr.length < 1)) {
-        currentBox = qArr.shift();
-        neighbours = getEdgeBoxes(currentBox, visited);
       }
     }
     console.log("From boxClick endline = ", this.state);
     return;
   }
-  buttonStart() {
-    const boxContent = [
+  wallPointerDown(i) {
+    const boxContent = this.state.boxContent,
+      box = boxContent.box,
       {
-        box: Array(9).fill(null),
-        startBoxIndex: null,
-        endBoxIndex: null,
-      },
-    ];
-    this.setState({
-      boxContent: boxContent,
-    });
+        startBoxIndex,
+        endBoxIndex,
+        resultBoxes,
+        transitionBoxes,
+        coveredBoxes,
+        wallBoxes,
+        distance,
+      } = boxContent;
+    if (startBoxIndex !== null && endBoxIndex !== null) {
+      this.wallPointer = true;
+      let newWallBoxes = wallBoxes;
+      newWallBoxes.push(i);
+      this.setState({
+        boxContent: {
+          box: box,
+          startBoxIndex: startBoxIndex,
+          endBoxIndex: endBoxIndex,
+          wallBoxes: newWallBoxes,
+          resultBoxes: resultBoxes,
+          transitionBoxes: transitionBoxes,
+          coveredBoxes: coveredBoxes,
+          distance: distance,
+        },
+      });
+    }
+  }
+  wallPointerUp(i) {
+    this.wallPointer = false;
+  }
+  createWall(i) {
+    const boxContent = this.state.boxContent,
+      box = boxContent.box,
+      {
+        startBoxIndex,
+        endBoxIndex,
+        resultBoxes,
+        transitionBoxes,
+        coveredBoxes,
+        distance,
+      } = boxContent;
+    if (startBoxIndex !== null && endBoxIndex !== null && this.wallPointer) {
+      let newWallBoxes = this.state.boxContent.wallBoxes;
+      newWallBoxes.push(i);
+      this.setState({
+        boxContent: {
+          box: box,
+          startBoxIndex: startBoxIndex,
+          endBoxIndex: endBoxIndex,
+          wallBoxes: newWallBoxes,
+          resultBoxes: resultBoxes,
+          transitionBoxes: transitionBoxes,
+          coveredBoxes: coveredBoxes,
+          distance: distance,
+        },
+      });
+    }
+  }
+  async buttonStart() {
+    const boxContent = this.state.boxContent,
+      box = boxContent.box,
+      { startBoxIndex, endBoxIndex, wallBoxes } = boxContent;
+
+    let transBoxes = [],
+      resultBoxes = [],
+      coveredBoxes = [],
+      distance = 0,
+      resultFlag = true;
+    let totalBoxes = this.ROW * this.COL;
+    let visited = Array(totalBoxes).fill(false);
+    for (let i = 0; i < wallBoxes.length; i++) {
+      visited[wallBoxes[i]] = true;
+    }
+    let parent = Array(totalBoxes).fill(null);
+    visited[boxContent.startBoxIndex] = true;
+    transBoxes.push(startBoxIndex);
+    let newTransBoxes = [];
+    while (!transBoxes.includes(endBoxIndex)) {
+      distance++;
+      newTransBoxes = [];
+      for (let i = 0; i < transBoxes.length; i++) {
+        newTransBoxes.push(
+          ...this.getEdgeBoxes(transBoxes[i], visited, parent)
+        );
+      }
+      if (newTransBoxes.length === 0) {
+        resultFlag = false;
+        return;
+      }
+      coveredBoxes.push(...transBoxes);
+      transBoxes = [...newTransBoxes];
+      await new Promise((resolve) => setTimeout(resolve, 70));
+      this.setState({
+        boxContent: {
+          box: box,
+          startBoxIndex: startBoxIndex,
+          endBoxIndex: endBoxIndex,
+          wallBoxes: wallBoxes,
+          resultBoxes: resultBoxes,
+          transitionBoxes: transBoxes,
+          coveredBoxes: coveredBoxes,
+          distance: distance,
+        },
+      });
+    }
+    if (resultFlag) {
+      let loopLength = distance,
+        currentResultBox = parent[endBoxIndex];
+      do {
+        resultBoxes.push(currentResultBox);
+        await new Promise((resolve) => setTimeout(resolve, 70));
+        console.log("currentRBox: ", currentResultBox);
+        this.setState({
+          boxContent: {
+            box: box,
+            startBoxIndex: startBoxIndex,
+            endBoxIndex: endBoxIndex,
+            wallBoxes: wallBoxes,
+            resultBoxes: resultBoxes,
+            coveredBoxes: [],
+            transitionBoxes: [],
+            distance: distance,
+          },
+        });
+        currentResultBox = parent[currentResultBox];
+        loopLength--;
+      } while (loopLength !== 0);
+    }
   }
 
   render() {
@@ -113,6 +259,9 @@ class Graph extends Component {
             cols={this.COL}
             boxContent={boxContent}
             onClick={(i) => this.boxClick(i)}
+            onPointerDown={(i) => this.wallPointerDown(i)}
+            onPointerEnter={(i) => this.createWall(i)}
+            onPointerUp={(i) => this.wallPointerUp(i)}
           />
         </div>
         <div className="graph-info">
@@ -126,27 +275,5 @@ class Graph extends Component {
       </div>
     );
   }
-}
-
-// ========================================
-
-function calculateWinner(box) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (box[a] && box[a] === box[b] && box[a] === box[c]) {
-      return box[a];
-    }
-  }
-  return null;
 }
 export default Graph;

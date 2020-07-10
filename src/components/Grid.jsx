@@ -9,11 +9,13 @@ class Grid extends Component {
       className = "startBox";
     } else if (boxContent.endBoxIndex === i) {
       className = "endBox";
-    } else if (boxContent.transitionBoxes.indexOf(i) > -1) {
+    } else if (boxContent.transitionBoxes.includes(i)) {
       className = "transitionBox";
-    } else if (boxContent.coveredBoxes.indexOf(i) > -1) {
+    } else if (boxContent.wallBoxes.includes(i)) {
+      className = "wallBox";
+    } else if (boxContent.coveredBoxes.includes(i)) {
       className = "coveredBox";
-    } else if (boxContent.resultBoxes.indexOf(i) > -1) {
+    } else if (boxContent.resultBoxes.includes(i)) {
       className = "resultBox";
     } else {
       className = "box";
@@ -25,6 +27,9 @@ class Grid extends Component {
         className={className}
         value={this.props.boxContent.box[i]}
         onClick={() => this.props.onClick(i)}
+        onPointerDown={() => this.props.onPointerDown(i)}
+        onPointerEnter={() => this.props.onPointerEnter(i)}
+        onPointerUp={() => this.props.onPointerUp(i)}
       />
     );
   }
@@ -34,6 +39,7 @@ class Grid extends Component {
       COL = this.props.cols;
     const arrRow = Array(ROW).fill(null),
       arrCol = Array(COL).fill(null);
+    console.log("boxContent from Grid: ", this.props.boxContent);
     const boxRows = arrRow.map((box, indexRow) => {
       return (
         <div className="grid-row" id={indexRow} key={indexRow}>
