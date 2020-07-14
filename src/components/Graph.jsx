@@ -5,8 +5,8 @@ import Grid from "./Grid";
 class Graph extends Component {
   constructor(props) {
     super(props);
-    const ROW = 20,
-      COL = 35;
+    const ROW = Math.floor(window.innerHeight / 33),
+      COL = 30;
     let wallPointer = false;
     this.wallPointer = wallPointer;
     this.ROW = ROW;
@@ -205,11 +205,12 @@ class Graph extends Component {
       }
       if (newTransBoxes.length === 0) {
         resultFlag = false;
+        coveredBoxes.push(...transBoxes);
         return;
       }
       coveredBoxes.push(...transBoxes);
       transBoxes = [...newTransBoxes];
-      await new Promise((resolve) => setTimeout(resolve, 70));
+      await new Promise((resolve) => setTimeout(resolve, 20));
       this.setState({
         boxContent: {
           box: box,
@@ -224,11 +225,12 @@ class Graph extends Component {
       });
     }
     if (resultFlag) {
+      coveredBoxes.push(...transBoxes);
       let loopLength = distance,
         currentResultBox = parent[endBoxIndex];
       do {
         resultBoxes.push(currentResultBox);
-        await new Promise((resolve) => setTimeout(resolve, 70));
+        await new Promise((resolve) => setTimeout(resolve, 20));
         console.log("currentRBox: ", currentResultBox);
         this.setState({
           boxContent: {
@@ -237,7 +239,7 @@ class Graph extends Component {
             endBoxIndex: endBoxIndex,
             wallBoxes: wallBoxes,
             resultBoxes: resultBoxes,
-            coveredBoxes: [],
+            coveredBoxes: coveredBoxes,
             transitionBoxes: [],
             distance: distance,
           },
@@ -266,7 +268,7 @@ class Graph extends Component {
         </div>
         <div className="graph-info">
           <button
-            className="btn btn-primary btn-md"
+            class="btn btn-primary btn-md"
             onClick={() => this.buttonStart()}
           >
             Start

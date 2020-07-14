@@ -9,14 +9,14 @@ class Grid extends Component {
       className = "startBox";
     } else if (boxContent.endBoxIndex === i) {
       className = "endBox";
-    } else if (boxContent.transitionBoxes.includes(i)) {
-      className = "transitionBox";
-    } else if (boxContent.wallBoxes.includes(i)) {
-      className = "wallBox";
-    } else if (boxContent.coveredBoxes.includes(i)) {
-      className = "coveredBox";
     } else if (boxContent.resultBoxes.includes(i)) {
       className = "resultBox";
+    } else if (boxContent.wallBoxes.includes(i)) {
+      className = "wallBox";
+    } else if (boxContent.transitionBoxes.includes(i)) {
+      className = "transitionBox";
+    } else if (boxContent.coveredBoxes.includes(i)) {
+      className = "coveredBox";
     } else {
       className = "box";
     }

@@ -19,8 +19,8 @@ ul {
 }
 
 .box {
-  background: #fff;
-  border: 1px solid #999;
+  background: rgb(23, 28, 54);
+  border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -31,10 +31,11 @@ ul {
   padding: 0;
   text-align: center;
   width: 34px;
+  position: relative;
 }
 .startBox {
-  background: #bbb;
-  border: 1px solid #999;
+  background: rgb(187, 187, 187);
+  border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -48,7 +49,7 @@ ul {
 }
 .endBox {
   background: rgb(0, 0, 0);
-  border: 1px solid #999;
+  border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -62,7 +63,7 @@ ul {
 }
 .transitionBox {
   background: rgb(241, 7, 7);
-  border: 1px solid #999;
+  border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -75,8 +76,8 @@ ul {
   width: 34px;
 }
 .coveredBox {
-  background: rgb(247, 235, 74);
-  border: 1px solid #999;
+  background: rgb(62, 211, 211);
+  border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -87,10 +88,11 @@ ul {
   padding: 0;
   text-align: center;
   width: 34px;
+  transition: background 0.5s ease;
 }
 .resultBox {
-  background: rgb(74, 247, 146);
-  border: 1px solid #999;
+  background: rgb(40, 37, 236);
+  border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -101,10 +103,11 @@ ul {
   padding: 0;
   text-align: center;
   width: 34px;
+  transition: background 0.5s ease;
 }
 .wallBox {
   background: rgb(102, 59, 2);
-  border: 1px solid #999;
+  border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
