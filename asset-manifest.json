@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/graph-project/static/css/main.f13f0ad7.chunk.css",
+    "main.js": "/graph-project/static/js/main.fc7cacb4.chunk.js",
+    "main.js.map": "/graph-project/static/js/main.fc7cacb4.chunk.js.map",
+    "runtime-main.js": "/graph-project/static/js/runtime-main.1cfbd10b.js",
+    "runtime-main.js.map": "/graph-project/static/js/runtime-main.1cfbd10b.js.map",
+    "static/css/2.829c9cb5.chunk.css": "/graph-project/static/css/2.829c9cb5.chunk.css",
+    "static/js/2.e3da1d01.chunk.js": "/graph-project/static/js/2.e3da1d01.chunk.js",
+    "static/js/2.e3da1d01.chunk.js.map": "/graph-project/static/js/2.e3da1d01.chunk.js.map",
+    "index.html": "/graph-project/index.html",
+    "precache-manifest.b790a612a5947702ac12f9ced8321795.js": "/graph-project/precache-manifest.b790a612a5947702ac12f9ced8321795.js",
+    "service-worker.js": "/graph-project/service-worker.js",
+    "static/css/2.829c9cb5.chunk.css.map": "/graph-project/static/css/2.829c9cb5.chunk.css.map",
+    "static/css/main.f13f0ad7.chunk.css.map": "/graph-project/static/css/main.f13f0ad7.chunk.css.map",
+    "static/js/2.e3da1d01.chunk.js.LICENSE.txt": "/graph-project/static/js/2.e3da1d01.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.1cfbd10b.js",
+    "static/css/2.829c9cb5.chunk.css",
+    "static/js/2.e3da1d01.chunk.js",
+    "static/css/main.f13f0ad7.chunk.css",
+    "static/js/main.fc7cacb4.chunk.js"
+  ]
+}
