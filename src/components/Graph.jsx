@@ -53,7 +53,7 @@ class Graph extends Component {
       parent[id + 1] = id;
     }
     //To consider corner edges.
-    /*     if (rowNum !== 0 && colNum !== 0 && !visited[id - COL - 1]) {
+    if (rowNum !== 0 && colNum !== 0 && !visited[id - COL - 1]) {
       arr.push(id - COL - 1);
       visited[id - COL - 1] = true;
       parent[id - COL - 1] = id;
@@ -72,7 +72,7 @@ class Graph extends Component {
       arr.push(id + COL - 1);
       visited[id + COL - 1] = true;
       parent[id + COL - 1] = id;
-    } */
+    }
     return arr;
   }
   boxClick(i) {
