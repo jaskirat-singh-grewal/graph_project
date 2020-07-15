@@ -1,5 +1,5 @@
 {
-  "homepage": "https://jaskirat-singh-grewal.github.io/Graph_Project_App",
+  "homepage": "https://jaskirat-singh-grewal.github.io/graph-project",
   "name": "graph-project-app",
   "version": "0.1.0",
   "private": true,
@@ -13,7 +13,7 @@
     "react-scripts": "3.4.1"
   },
   "scripts": {
-    "preDeploy": "npm run build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
