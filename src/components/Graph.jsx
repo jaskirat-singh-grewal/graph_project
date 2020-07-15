@@ -179,7 +179,11 @@ class Graph extends Component {
   async buttonStart() {
     const boxContent = this.state.boxContent,
       box = boxContent.box,
-      { startBoxIndex, endBoxIndex, wallBoxes } = boxContent;
+      { startBoxIndex, endBoxIndex } = boxContent;
+    let { wallBoxes } = boxContent;
+    while (wallBoxes.includes(endBoxIndex)) {
+      wallBoxes.splice(wallBoxes.indexOf(endBoxIndex), 1);
+    }
 
     let transBoxes = [],
       resultBoxes = [],
