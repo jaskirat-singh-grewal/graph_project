@@ -5,10 +5,11 @@ import Grid from "./Grid";
 class Graph extends Component {
   constructor(props) {
     super(props);
-    const BOXSIZE = 30;
+
+    const BOXSIZE = 5; // used for offset only, size greater than this will fit perfectly on the screen
     this.BOXSIZE = BOXSIZE;
-    let ROW = Math.floor(window.innerHeight / (BOXSIZE - 1)),
-      COL = Math.floor(window.innerWidth / (BOXSIZE - 1));
+    let ROW = 25,
+      COL = 50;
     let wallPointer = false;
     this.wallPointer = wallPointer;
 
@@ -36,11 +37,12 @@ class Graph extends Component {
   }
 
   resize() {
-    let offset = window.innerWidth % (this.BOXSIZE - 1);
+    let offset = window.innerWidth - (this.BOXSIZE - 1) * this.state.col;
+    console.log("sizeOffset = ", offset);
     this.setState({
       boxContent: this.state.boxContent,
-      row: Math.floor(window.innerHeight / (this.BOXSIZE - 1)),
-      col: Math.floor(window.innerWidth / (this.BOXSIZE - 1)),
+      row: 25,
+      col: 50,
       sizeOffset: offset,
     });
   }
