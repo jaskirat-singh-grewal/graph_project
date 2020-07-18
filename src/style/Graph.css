@@ -1,11 +1,10 @@
 body {
   font: 14px "Century Gothic", Futura, sans-serif;
-  margin: 20px;
+  margin: 0;
 }
 
-ol,
-ul {
-  padding-left: 30px;
+.jumbotron {
+  color: rgb(102, 59, 2);
 }
 
 .grid-row:after {
@@ -13,9 +12,7 @@ ul {
   content: "";
   display: table;
 }
-
-.status {
-  margin-bottom: 10px;
+.jumbo {
 }
 
 .box {
@@ -24,13 +21,13 @@ ul {
   float: left;
   font-size: 24px;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  line-height: 30px;
+  height: 30px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30px;
   position: relative;
 }
 .startBox {
@@ -39,13 +36,13 @@ ul {
   float: left;
   font-size: 24px;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  line-height: 30px;
+  height: 30px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30px;
 }
 .endBox {
   background: rgb(0, 0, 0);
@@ -53,13 +50,13 @@ ul {
   float: left;
   font-size: 24px;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  line-height: 30px;
+  height: 30px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30px;
 }
 .transitionBox {
   background: rgb(241, 7, 7);
@@ -67,13 +64,13 @@ ul {
   float: left;
   font-size: 24px;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  line-height: 30px;
+  height: 30px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30px;
 }
 .coveredBox {
   background: rgb(62, 211, 211);
@@ -81,13 +78,13 @@ ul {
   float: left;
   font-size: 24px;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  line-height: 30px;
+  height: 30px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30px;
   transition: background 0.5s ease;
 }
 .resultBox {
@@ -96,13 +93,13 @@ ul {
   float: left;
   font-size: 24px;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  line-height: 30px;
+  height: 30px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30px;
   transition: background 0.5s ease;
 }
 .wallBox {
@@ -111,13 +108,13 @@ ul {
   float: left;
   font-size: 24px;
   font-weight: bold;
-  line-height: 34px;
-  height: 34px;
+  line-height: 30px;
+  height: 30px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 34px;
+  width: 30px;
 }
 
 .box:focus {
@@ -130,9 +127,9 @@ ul {
 
 .graph {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 
 .graph-info {
-  margin-left: 20px;
+  margin-left: 0px;
 }

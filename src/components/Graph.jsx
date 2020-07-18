@@ -5,12 +5,13 @@ import Grid from "./Grid";
 class Graph extends Component {
   constructor(props) {
     super(props);
-    const ROW = Math.floor(window.innerHeight / 33),
-      COL = 30;
+    const BOXSIZE = 30;
+    this.BOXSIZE = BOXSIZE;
+    let ROW = Math.floor(window.innerHeight / (BOXSIZE - 1)),
+      COL = Math.floor(window.innerWidth / (BOXSIZE - 1));
     let wallPointer = false;
     this.wallPointer = wallPointer;
-    this.ROW = ROW;
-    this.COL = COL;
+
     const totalBoxes = ROW * COL;
     let box = Array(ROW * COL).fill(null);
     this.state = {
@@ -24,11 +25,32 @@ class Graph extends Component {
         coveredBoxes: [],
         distance: 0,
       },
+      row: ROW,
+      col: COL,
+      sizeOffset: ROW % BOXSIZE,
     };
   }
+  componentDidMount() {
+    window.addEventListener("resize", this.resize.bind(this));
+    this.resize();
+  }
+
+  resize() {
+    let offset = window.innerWidth % (this.BOXSIZE - 1);
+    this.setState({
+      boxContent: this.state.boxContent,
+      row: Math.floor(window.innerHeight / (this.BOXSIZE - 1)),
+      col: Math.floor(window.innerWidth / (this.BOXSIZE - 1)),
+      sizeOffset: offset,
+    });
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.resize.bind(this));
+  }
   getEdgeBoxes(id, visited, parent) {
-    const ROW = this.ROW,
-      COL = this.COL;
+    const ROW = this.state.row,
+      COL = this.state.col;
     const rowNum = Math.floor(id / COL);
     const colNum = id % COL;
     let arr = [];
@@ -53,7 +75,7 @@ class Graph extends Component {
       parent[id + 1] = id;
     }
     //To consider corner edges.
-    if (rowNum !== 0 && colNum !== 0 && !visited[id - COL - 1]) {
+    /*if (rowNum !== 0 && colNum !== 0 && !visited[id - COL - 1]) {
       arr.push(id - COL - 1);
       visited[id - COL - 1] = true;
       parent[id - COL - 1] = id;
@@ -72,7 +94,7 @@ class Graph extends Component {
       arr.push(id + COL - 1);
       visited[id + COL - 1] = true;
       parent[id + COL - 1] = id;
-    }
+    }*/
     return arr;
   }
   boxClick(i) {
@@ -91,8 +113,10 @@ class Graph extends Component {
           coveredBoxes: [],
           distance: distance,
         },
+        row: this.state.row,
+        col: this.state.col,
+        sizeOffset: this.state.sizeOffset,
       });
-      console.log("From BoxClick startBoxIndex = ", this.state);
     } else if (startBoxIndex !== null && endBoxIndex === null) {
       if (startBoxIndex === i) {
         return;
@@ -108,11 +132,12 @@ class Graph extends Component {
             coveredBoxes: [],
             distance: distance,
           },
+          row: this.state.row,
+          col: this.state.col,
+          sizeOffset: this.state.sizeOffset,
         });
-        console.log("From boxClick endBoxIndex = ", this.state);
       }
     }
-    console.log("From boxClick endline = ", this.state);
     return;
   }
   wallPointerDown(i) {
@@ -142,6 +167,9 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
+        row: this.state.row,
+        col: this.state.col,
+        sizeOffset: this.state.sizeOffset,
       });
     }
   }
@@ -173,6 +201,9 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
+        row: this.state.row,
+        col: this.state.col,
+        sizeOffset: this.state.sizeOffset,
       });
     }
   }
@@ -190,7 +221,7 @@ class Graph extends Component {
       coveredBoxes = [],
       distance = 0,
       resultFlag = true;
-    let totalBoxes = this.ROW * this.COL;
+    let totalBoxes = this.state.row * this.state.col;
     let visited = Array(totalBoxes).fill(false);
     for (let i = 0; i < wallBoxes.length; i++) {
       visited[wallBoxes[i]] = true;
@@ -226,6 +257,9 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
+        row: this.state.row,
+        col: this.state.col,
+        sizeOffset: this.state.sizeOffset,
       });
     }
     if (resultFlag) {
@@ -235,7 +269,6 @@ class Graph extends Component {
       do {
         resultBoxes.push(currentResultBox);
         await new Promise((resolve) => setTimeout(resolve, 20));
-        console.log("currentRBox: ", currentResultBox);
         this.setState({
           boxContent: {
             box: box,
@@ -247,6 +280,9 @@ class Graph extends Component {
             transitionBoxes: [],
             distance: distance,
           },
+          row: this.state.row,
+          col: this.state.col,
+          sizeOffset: this.state.sizeOffset,
         });
         currentResultBox = parent[currentResultBox];
         loopLength--;
@@ -259,24 +295,36 @@ class Graph extends Component {
 
     return (
       <div className="graph">
+        <div
+          class="jumbotron jumbotron-fluid"
+          style={{
+            "background-color": "#0f4c75",
+            padding: "30px",
+            margin: "0px 0px",
+          }}
+        >
+          <div className="graph-info">
+            <h1 class="display-4">asdfasfads </h1>
+            <button
+              class="btn btn-primary btn-md"
+              onClick={() => this.buttonStart()}
+            >
+              Start
+            </button>
+          </div>
+        </div>
         <div className="graph-grid">
           <Grid
-            rows={this.ROW}
-            cols={this.COL}
+            rows={this.state.row}
+            cols={this.state.col}
+            boxSize={this.BOXSIZE}
+            sizeOffset={this.state.sizeOffset}
             boxContent={boxContent}
             onClick={(i) => this.boxClick(i)}
             onPointerDown={(i) => this.wallPointerDown(i)}
             onPointerEnter={(i) => this.createWall(i)}
             onPointerUp={(i) => this.wallPointerUp(i)}
           />
-        </div>
-        <div className="graph-info">
-          <button
-            class="btn btn-primary btn-md"
-            onClick={() => this.buttonStart()}
-          >
-            Start
-          </button>
         </div>
       </div>
     );

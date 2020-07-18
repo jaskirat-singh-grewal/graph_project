@@ -2,8 +2,11 @@ import React, { Component } from "react";
 import Box from "./Box";
 
 class Grid extends Component {
-  renderBox(i) {
-    let className;
+  renderBox(i, coli) {
+    // sizeOffset using pigeon hole principle
+    let className,
+      allBoxOffset = Math.floor(this.props.sizeOffset / this.props.cols),
+      offsetBool = coli < (this.props.sizeOffset % this.props.cols) - 1;
     let { boxContent } = this.props;
     if (boxContent.startBoxIndex === i) {
       className = "startBox";
@@ -24,6 +27,9 @@ class Grid extends Component {
       <Box
         key={i}
         id={i}
+        boxSize={this.props.boxSize}
+        allBoxOffset={allBoxOffset}
+        offsetBool={offsetBool}
         className={className}
         value={this.props.boxContent.box[i]}
         onClick={() => this.props.onClick(i)}
@@ -35,16 +41,15 @@ class Grid extends Component {
   }
 
   render() {
-    const ROW = this.props.rows,
+    let ROW = this.props.rows,
       COL = this.props.cols;
-    const arrRow = Array(ROW).fill(null),
+    let arrRow = Array(ROW).fill(null),
       arrCol = Array(COL).fill(null);
-    console.log("boxContent from Grid: ", this.props.boxContent);
-    const boxRows = arrRow.map((box, indexRow) => {
+    let boxRows = arrRow.map((box, indexRow) => {
       return (
         <div className="grid-row" id={indexRow} key={indexRow}>
           {arrCol.map((box, indexCol) => {
-            return this.renderBox(indexRow * COL + indexCol);
+            return this.renderBox(indexRow * COL + indexCol, indexCol);
           })}
         </div>
       );
