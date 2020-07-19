@@ -8,7 +8,7 @@ class Graph extends Component {
 
     const BOXSIZE = 5; // used for offset only, size greater than this will fit perfectly on the screen
     this.BOXSIZE = BOXSIZE;
-    let ROW = 25,
+    const ROW = 25,
       COL = 50;
     let wallPointer = false;
     this.wallPointer = wallPointer;
@@ -26,6 +26,7 @@ class Graph extends Component {
         coveredBoxes: [],
         distance: 0,
       },
+      status: "Please select your starting node.",
       row: ROW,
       col: COL,
       sizeOffset: ROW % BOXSIZE,
@@ -38,11 +39,10 @@ class Graph extends Component {
 
   resize() {
     let offset = window.innerWidth - (this.BOXSIZE - 1) * this.state.col;
-    console.log("sizeOffset = ", offset);
     this.setState({
       boxContent: this.state.boxContent,
-      row: 25,
-      col: 50,
+      row: this.state.row,
+      col: this.state.col,
       sizeOffset: offset,
     });
   }
@@ -115,6 +115,7 @@ class Graph extends Component {
           coveredBoxes: [],
           distance: distance,
         },
+        status: "Now please select you ending or target node.",
         row: this.state.row,
         col: this.state.col,
         sizeOffset: this.state.sizeOffset,
@@ -134,6 +135,7 @@ class Graph extends Component {
             coveredBoxes: [],
             distance: distance,
           },
+          status: "Drag or Click node to create a wall (weight = infinity)",
           row: this.state.row,
           col: this.state.col,
           sizeOffset: this.state.sizeOffset,
@@ -169,6 +171,7 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
+        status: this.state.status,
         row: this.state.row,
         col: this.state.col,
         sizeOffset: this.state.sizeOffset,
@@ -203,16 +206,36 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
+        status: this.state.status,
         row: this.state.row,
         col: this.state.col,
         sizeOffset: this.state.sizeOffset,
       });
     }
   }
-  async buttonStart() {
+  async startButton() {
     const boxContent = this.state.boxContent,
       box = boxContent.box,
       { startBoxIndex, endBoxIndex } = boxContent;
+    if (startBoxIndex === null) {
+      this.setState({
+        boxContent: this.state.boxContent,
+        row: this.state.row,
+        col: this.state.col,
+        sizeOffset: this.state.sizeOffset,
+        status: "Please select the starting and target node before searching.",
+      });
+      return;
+    } else if (endBoxIndex === null) {
+      this.setState({
+        boxContent: this.state.boxContent,
+        row: this.state.row,
+        col: this.state.col,
+        sizeOffset: this.state.sizeOffset,
+        status: "Please select the target node before searching.",
+      });
+      return;
+    }
     let { wallBoxes } = boxContent;
     while (wallBoxes.includes(endBoxIndex)) {
       wallBoxes.splice(wallBoxes.indexOf(endBoxIndex), 1);
@@ -259,6 +282,7 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
+        status: "Searching the required path, Have Fun!",
         row: this.state.row,
         col: this.state.col,
         sizeOffset: this.state.sizeOffset,
@@ -282,6 +306,8 @@ class Graph extends Component {
             transitionBoxes: [],
             distance: distance,
           },
+          status:
+            "Here is the shortest path from the starting to the end node.",
           row: this.state.row,
           col: this.state.col,
           sizeOffset: this.state.sizeOffset,
@@ -297,23 +323,53 @@ class Graph extends Component {
 
     return (
       <div className="graph">
-        <div
-          class="jumbotron jumbotron-fluid"
-          style={{
-            "background-color": "#0f4c75",
-            padding: "30px",
-            margin: "0px 0px",
-          }}
-        >
-          <div className="graph-info">
-            <h1 class="display-4">asdfasfads </h1>
+        <div className="graph-info">
+          <div className="nodeInfo">
+            <ul>
+              <li className="first">
+                <box
+                  className="startBox"
+                  style={{ border: "transparent", animation: "none" }}
+                />
+                Starting Node
+              </li>
+              <li>
+                <box
+                  className="endBox"
+                  style={{ border: "transparent", animation: "none" }}
+                />
+                Ending/Target Node
+              </li>
+              <li>
+                <box
+                  className="box"
+                  style={{ border: "transparent", animation: "none" }}
+                />
+                Empty Node
+              </li>
+              <li>
+                <box
+                  className="coveredBox"
+                  style={{ border: "transparent", animation: "none" }}
+                />
+                Covered Node
+              </li>
+              <li>
+                <box
+                  className="resultBox"
+                  style={{ border: "transparent", animation: "none" }}
+                />
+                Result Path Node
+              </li>
+            </ul>
             <button
               class="btn btn-primary btn-md"
-              onClick={() => this.buttonStart()}
+              onClick={() => this.startButton()}
             >
-              Start
+              Search Path
             </button>
           </div>
+          <div className="status">{this.state.status}</div>
         </div>
         <div className="graph-grid">
           <Grid

@@ -12,8 +12,6 @@ body {
   content: "";
   display: table;
 }
-.jumbo {
-}
 
 .box {
   background: rgb(23, 28, 54);
@@ -27,11 +25,16 @@ body {
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 5px;
+  width: 25px;
   position: relative;
+  z-index: 0;
+  -webkit-transition: background-color 2s ease-out;
+  -moz-transition: background-color 2s ease-out;
+  -o-transition: background-color 2s ease-out;
+  transition: background-color 2s ease-out;
 }
 .startBox {
-  background: rgb(187, 187, 187);
+  background-color: rgb(187, 187, 187);
   border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
@@ -42,7 +45,8 @@ body {
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 5px;
+  width: 25px;
+  z-index: 1;
 }
 .endBox {
   background: rgb(0, 0, 0);
@@ -56,7 +60,8 @@ body {
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 5px;
+  width: 25px;
+  z-index: 2;
 }
 .transitionBox {
   background: rgb(241, 7, 7);
@@ -70,7 +75,8 @@ body {
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 5px;
+  width: 25px;
+  z-index: 3;
 }
 .coveredBox {
   background: rgb(62, 211, 211);
@@ -84,8 +90,9 @@ body {
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 5px;
-  transition: background 0.5s ease;
+  width: 25px;
+  z-index: 4;
+  animation: coverpopup 2s;
 }
 .resultBox {
   background: rgb(40, 37, 236);
@@ -99,8 +106,10 @@ body {
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 5px;
+  width: 25px;
   transition: background 0.5s ease;
+  z-index: 6;
+  animation: resultpopup 0.7s;
 }
 .wallBox {
   background: rgb(102, 59, 2);
@@ -114,7 +123,8 @@ body {
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 5px;
+  width: 25px;
+  animation: wallpopup 1s;
 }
 
 .box:focus {
@@ -130,6 +140,66 @@ body {
   flex-direction: column;
 }
 
-.graph-info {
-  margin-left: 0px;
+.nodeInfo {
+  margin: 0px;
+  padding: 20px;
+  padding-bottom: 0px;
+  background-color: #0f4c75;
+  position: relative;
+  margin: 0px 0px;
+}
+.nodeInfo ul {
+  position: relative;
+  display: inline-block;
+}
+.nodeInfo ul li {
+  display: inline-block;
+  margin: 20px;
+  color: white;
+}
+.nodeInfo ul li box {
+  margin-right: 20px;
+}
+
+.status {
+  background-color: #0f4c75;
+  padding-left: 80px;
+  padding-bottom: 40px;
+  color: yellow;
+  font-size: 30px;
+}
+
+@keyframes resultpopup {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes wallpopup {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    background-color: red;
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes coverpopup {
+  0% {
+    background-color: green;
+  }
+  50% {
+    background-color: yellow;
+  }
+  100% {
+  }
 }
