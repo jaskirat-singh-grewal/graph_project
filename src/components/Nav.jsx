@@ -4,7 +4,7 @@ class Nav extends Component {
     return (
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">
-          Navbar
+          Dijkstra's Algorithm Visual
         </a>
         <button
           class="navbar-toggler"
@@ -26,12 +26,12 @@ class Nav extends Component {
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">
-                Features
+                (UnderConstruction) Features
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">
-                Pricing
+                (UnderConstruction) Have Your Own Graph?
               </a>
             </li>
             <li class="nav-item dropdown">
@@ -43,7 +43,7 @@ class Nav extends Component {
                 aria-haspopup="true"
                 aria-expanded="false"
               >
-                Dropdown link
+                (UnderConstruction) Dropdown
               </a>
               <div
                 class="dropdown-menu"

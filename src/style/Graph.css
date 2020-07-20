@@ -142,7 +142,7 @@ body {
 
 .nodeInfo {
   margin: 0px;
-  padding: 20px;
+  padding: 20px 0px;
   padding-bottom: 0px;
   background-color: #0f4c75;
   position: relative;
@@ -154,7 +154,7 @@ body {
 }
 .nodeInfo ul li {
   display: inline-block;
-  margin: 20px;
+  margin: 10px;
   color: white;
 }
 .nodeInfo ul li box {
@@ -164,8 +164,8 @@ body {
 .status {
   background-color: #0f4c75;
   padding-left: 80px;
-  padding-bottom: 40px;
-  color: yellow;
+  padding-bottom: 30px;
+  color: rgb(172, 172, 172);
   font-size: 30px;
 }
 

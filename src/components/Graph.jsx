@@ -30,6 +30,9 @@ class Graph extends Component {
       row: ROW,
       col: COL,
       sizeOffset: ROW % BOXSIZE,
+      inProgress: false,
+      reset: false,
+      speedTimer: 20,
     };
   }
   componentDidMount() {
@@ -40,9 +43,6 @@ class Graph extends Component {
   resize() {
     let offset = window.innerWidth - (this.BOXSIZE - 1) * this.state.col;
     this.setState({
-      boxContent: this.state.boxContent,
-      row: this.state.row,
-      col: this.state.col,
       sizeOffset: offset,
     });
   }
@@ -100,6 +100,14 @@ class Graph extends Component {
     return arr;
   }
   boxClick(i) {
+    if (this.state.inProgress) {
+      return;
+    } else {
+      this.setState({
+        reset: false,
+        inProgress: false,
+      });
+    }
     const boxContent = this.state.boxContent,
       box = boxContent.box,
       { startBoxIndex, endBoxIndex, distance } = boxContent;
@@ -116,9 +124,6 @@ class Graph extends Component {
           distance: distance,
         },
         status: "Now please select you ending or target node.",
-        row: this.state.row,
-        col: this.state.col,
-        sizeOffset: this.state.sizeOffset,
       });
     } else if (startBoxIndex !== null && endBoxIndex === null) {
       if (startBoxIndex === i) {
@@ -136,15 +141,15 @@ class Graph extends Component {
             distance: distance,
           },
           status: "Drag or Click node to create a wall (weight = infinity)",
-          row: this.state.row,
-          col: this.state.col,
-          sizeOffset: this.state.sizeOffset,
         });
       }
     }
     return;
   }
   wallPointerDown(i) {
+    if (this.state.inProgress) {
+      return;
+    }
     const boxContent = this.state.boxContent,
       box = boxContent.box,
       {
@@ -171,17 +176,19 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
-        status: this.state.status,
-        row: this.state.row,
-        col: this.state.col,
-        sizeOffset: this.state.sizeOffset,
       });
     }
   }
   wallPointerUp(i) {
+    if (this.state.inProgress) {
+      return;
+    }
     this.wallPointer = false;
   }
   createWall(i) {
+    if (this.state.inProgress) {
+      return;
+    }
     const boxContent = this.state.boxContent,
       box = boxContent.box,
       {
@@ -206,35 +213,36 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
-        status: this.state.status,
-        row: this.state.row,
-        col: this.state.col,
-        sizeOffset: this.state.sizeOffset,
       });
     }
   }
   async startButton() {
+    if (this.state.inProgress) {
+      return;
+    } else {
+      this.setState({
+        reset: false,
+      });
+    }
+
     const boxContent = this.state.boxContent,
       box = boxContent.box,
       { startBoxIndex, endBoxIndex } = boxContent;
     if (startBoxIndex === null) {
       this.setState({
-        boxContent: this.state.boxContent,
-        row: this.state.row,
-        col: this.state.col,
-        sizeOffset: this.state.sizeOffset,
         status: "Please select the starting and target node before searching.",
       });
       return;
     } else if (endBoxIndex === null) {
       this.setState({
-        boxContent: this.state.boxContent,
-        row: this.state.row,
-        col: this.state.col,
-        sizeOffset: this.state.sizeOffset,
         status: "Please select the target node before searching.",
       });
       return;
+    } else {
+      this.setState({
+        status: "Search in Progress, Have Fun!",
+        inProgress: true,
+      });
     }
     let { wallBoxes } = boxContent;
     while (wallBoxes.includes(endBoxIndex)) {
@@ -266,11 +274,37 @@ class Graph extends Component {
       if (newTransBoxes.length === 0) {
         resultFlag = false;
         coveredBoxes.push(...transBoxes);
+        this.setState({
+          status:
+            "No path found, shortest distance is infinity. Click reset to retry.",
+          inProgress: false,
+        });
         return;
       }
       coveredBoxes.push(...transBoxes);
       transBoxes = [...newTransBoxes];
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve, reject) => {
+        if (!this.state.reset) {
+          setTimeout(resolve, this.state.speedTimer);
+        } else {
+          this.setState({
+            boxContent: {
+              box: this.state.boxContent.box,
+              startBoxIndex: null,
+              endBoxIndex: null,
+              wallBoxes: [],
+              resultBoxes: [],
+              transitionBoxes: [],
+              coveredBoxes: [],
+              distance: 0,
+            },
+            status: "Please select your starting node.",
+            inProgress: false,
+            reset: true,
+          });
+          return;
+        }
+      });
       this.setState({
         boxContent: {
           box: box,
@@ -282,10 +316,6 @@ class Graph extends Component {
           coveredBoxes: coveredBoxes,
           distance: distance,
         },
-        status: "Searching the required path, Have Fun!",
-        row: this.state.row,
-        col: this.state.col,
-        sizeOffset: this.state.sizeOffset,
       });
     }
     if (resultFlag) {
@@ -294,7 +324,28 @@ class Graph extends Component {
         currentResultBox = parent[endBoxIndex];
       do {
         resultBoxes.push(currentResultBox);
-        await new Promise((resolve) => setTimeout(resolve, 20));
+        await new Promise((resolve, reject) => {
+          if (!this.state.reset) {
+            setTimeout(resolve, this.state.speedTimer);
+          } else {
+            this.setState({
+              boxContent: {
+                box: this.state.boxContent.box,
+                startBoxIndex: null,
+                endBoxIndex: null,
+                wallBoxes: [],
+                resultBoxes: [],
+                transitionBoxes: [],
+                coveredBoxes: [],
+                distance: 0,
+              },
+              status: "Select your starting node.",
+              inProgress: false,
+              reset: true,
+            });
+            return;
+          }
+        });
         this.setState({
           boxContent: {
             box: box,
@@ -306,15 +357,40 @@ class Graph extends Component {
             transitionBoxes: [],
             distance: distance,
           },
-          status:
-            "Here is the shortest path from the starting to the end node.",
-          row: this.state.row,
-          col: this.state.col,
-          sizeOffset: this.state.sizeOffset,
         });
         currentResultBox = parent[currentResultBox];
         loopLength--;
+        if (loopLength === 0) {
+          this.setState({
+            inProgress: false,
+            status: "Here is the required shortest path, click reset to retry.",
+          });
+        }
       } while (loopLength !== 0);
+    }
+  }
+  resetButton() {
+    if (this.state.inProgress) {
+      this.setState({
+        inProgress: false,
+        reset: true,
+      });
+    } else {
+      this.setState({
+        boxContent: {
+          box: this.state.boxContent.box,
+          startBoxIndex: null,
+          endBoxIndex: null,
+          wallBoxes: [],
+          resultBoxes: [],
+          transitionBoxes: [],
+          coveredBoxes: [],
+          distance: 0,
+        },
+        status: "Please select your starting node.",
+        inProgress: false,
+        reset: false,
+      });
     }
   }
 
@@ -365,8 +441,16 @@ class Graph extends Component {
             <button
               class="btn btn-primary btn-md"
               onClick={() => this.startButton()}
+              disabled={this.state.inProgress}
             >
               Search Path
+            </button>
+            <button
+              class="btn btn-warning btn-md"
+              onClick={() => this.resetButton()}
+              style={{ marginLeft: "20px" }}
+            >
+              Reset
             </button>
           </div>
           <div className="status">{this.state.status}</div>
