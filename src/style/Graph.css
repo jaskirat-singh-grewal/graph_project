@@ -34,6 +34,8 @@ body {
   transition: background-color 2s ease-out;
 }
 .startBox {
+  display: table-cell;
+  vertical-align: middle;
   background-color: rgb(187, 187, 187);
   border: 1px solid rgb(180, 31, 173);
   float: left;
@@ -49,7 +51,7 @@ body {
   z-index: 1;
 }
 .endBox {
-  background: rgb(0, 0, 0);
+  background: rgb(187, 187, 187);
   border: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
@@ -109,7 +111,7 @@ body {
   width: 25px;
   transition: background 0.5s ease;
   z-index: 6;
-  animation: resultpopup 0.7s;
+  animation: resultpopup 0.6s;
 }
 .wallBox {
   background: rgb(102, 59, 2);
@@ -157,11 +159,19 @@ body {
   margin: 10px;
   color: white;
 }
+.nodeInfo ul li button {
+  margin-right: 20px;
+}
+.nodeInfo ul li span {
+  display: inline-block;
+  color: black;
+}
 .nodeInfo ul li box {
   margin-right: 20px;
 }
 
 .status {
+  margin: 0px;
   background-color: #0f4c75;
   padding-left: 80px;
   padding-bottom: 30px;
@@ -174,7 +184,7 @@ body {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.4);
+    transform: scale(1.6);
   }
   100% {
     transform: scale(1);
@@ -203,3 +213,36 @@ body {
   100% {
   }
 }
+
+/************* Glyphicons ***************/ /*
+@font-face {
+  font-family: "Glyphicons Halflings";
+
+  src: url("../fonts/glyphicons-halflings-regular.eot");
+  src: url("../fonts/glyphicons-halflings-regular.eot?#iefix")
+      format("embedded-opentype"),
+    url("../fonts/glyphicons-halflings-regular.woff2") format("woff2"),
+    url("../fonts/glyphicons-halflings-regular.woff") format("woff"),
+    url("../fonts/glyphicons-halflings-regular.ttf") format("truetype"),
+    url("../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular")
+      format("svg");
+}
+.glyphicon {
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  font-family: "Glyphicons Halflings";
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.glyphicon-move:before {
+  content: "\e068";
+}
+.glyphicon-record:before {
+  content: "\e165";
+}
+/*********************************************/

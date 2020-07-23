@@ -2,7 +2,10 @@ import React, { Component } from "react";
 class Nav extends Component {
   render() {
     return (
-      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <nav
+        class="navbar navbar-expand-lg navbar-dark bg-dark "
+        style={{ margin: "0px", "border-radius": "0px" }}
+      >
         <a class="navbar-brand" href="#">
           Dijkstra's Algorithm Visual
         </a>

@@ -16,8 +16,8 @@ class Graph extends Component {
     const totalBoxes = ROW * COL;
     let box = Array(ROW * COL).fill(null);
     this.state = {
+      box: box,
       boxContent: {
-        box: box,
         startBoxIndex: null,
         endBoxIndex: null,
         wallBoxes: [],
@@ -32,7 +32,7 @@ class Graph extends Component {
       sizeOffset: ROW % BOXSIZE,
       inProgress: false,
       reset: false,
-      speedTimer: 20,
+      speedTimer: 40,
     };
   }
   componentDidMount() {
@@ -109,12 +109,10 @@ class Graph extends Component {
       });
     }
     const boxContent = this.state.boxContent,
-      box = boxContent.box,
       { startBoxIndex, endBoxIndex, distance } = boxContent;
     if (startBoxIndex === null) {
       this.setState({
         boxContent: {
-          box: box,
           startBoxIndex: i,
           endBoxIndex: null,
           wallBoxes: this.state.boxContent.wallBoxes,
@@ -131,7 +129,6 @@ class Graph extends Component {
       } else {
         this.setState({
           boxContent: {
-            box: box,
             startBoxIndex: startBoxIndex,
             endBoxIndex: i,
             wallBoxes: this.state.boxContent.wallBoxes,
@@ -151,7 +148,6 @@ class Graph extends Component {
       return;
     }
     const boxContent = this.state.boxContent,
-      box = boxContent.box,
       {
         startBoxIndex,
         endBoxIndex,
@@ -167,7 +163,6 @@ class Graph extends Component {
       newWallBoxes.push(i);
       this.setState({
         boxContent: {
-          box: box,
           startBoxIndex: startBoxIndex,
           endBoxIndex: endBoxIndex,
           wallBoxes: newWallBoxes,
@@ -190,7 +185,6 @@ class Graph extends Component {
       return;
     }
     const boxContent = this.state.boxContent,
-      box = boxContent.box,
       {
         startBoxIndex,
         endBoxIndex,
@@ -204,7 +198,6 @@ class Graph extends Component {
       newWallBoxes.push(i);
       this.setState({
         boxContent: {
-          box: box,
           startBoxIndex: startBoxIndex,
           endBoxIndex: endBoxIndex,
           wallBoxes: newWallBoxes,
@@ -226,7 +219,6 @@ class Graph extends Component {
     }
 
     const boxContent = this.state.boxContent,
-      box = boxContent.box,
       { startBoxIndex, endBoxIndex } = boxContent;
     if (startBoxIndex === null) {
       this.setState({
@@ -289,7 +281,6 @@ class Graph extends Component {
         } else {
           this.setState({
             boxContent: {
-              box: this.state.boxContent.box,
               startBoxIndex: null,
               endBoxIndex: null,
               wallBoxes: [],
@@ -307,7 +298,6 @@ class Graph extends Component {
       });
       this.setState({
         boxContent: {
-          box: box,
           startBoxIndex: startBoxIndex,
           endBoxIndex: endBoxIndex,
           wallBoxes: wallBoxes,
@@ -330,7 +320,6 @@ class Graph extends Component {
           } else {
             this.setState({
               boxContent: {
-                box: this.state.boxContent.box,
                 startBoxIndex: null,
                 endBoxIndex: null,
                 wallBoxes: [],
@@ -348,7 +337,6 @@ class Graph extends Component {
         });
         this.setState({
           boxContent: {
-            box: box,
             startBoxIndex: startBoxIndex,
             endBoxIndex: endBoxIndex,
             wallBoxes: wallBoxes,
@@ -378,7 +366,6 @@ class Graph extends Component {
     } else {
       this.setState({
         boxContent: {
-          box: this.state.boxContent.box,
           startBoxIndex: null,
           endBoxIndex: null,
           wallBoxes: [],
@@ -403,17 +390,21 @@ class Graph extends Component {
           <div className="nodeInfo">
             <ul>
               <li className="first">
-                <box
-                  className="startBox"
+                <button
+                  class="startBox"
                   style={{ border: "transparent", animation: "none" }}
-                />
+                >
+                  <span class="glyphicon glyphicon-move"></span>
+                </button>
                 Starting Node
               </li>
               <li>
-                <box
+                <button
                   className="endBox"
                   style={{ border: "transparent", animation: "none" }}
-                />
+                >
+                  <span class="glyphicon glyphicon-record"></span>
+                </button>
                 Ending/Target Node
               </li>
               <li>
@@ -457,6 +448,7 @@ class Graph extends Component {
         </div>
         <div className="graph-grid">
           <Grid
+            box={this.state.box}
             rows={this.state.row}
             cols={this.state.col}
             boxSize={this.BOXSIZE}
