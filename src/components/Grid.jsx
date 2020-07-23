@@ -31,7 +31,7 @@ class Grid extends Component {
         allBoxOffset={allBoxOffset}
         offsetBool={offsetBool}
         className={className}
-        value={this.props.boxContent.box[i]}
+        value={this.props.box[i]}
         onClick={() => this.props.onClick(i)}
         onPointerDown={() => this.props.onPointerDown(i)}
         onPointerEnter={() => this.props.onPointerEnter(i)}
