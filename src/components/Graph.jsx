@@ -41,7 +41,9 @@ class Graph extends Component {
   }
 
   resize() {
-    let offset = window.innerWidth - (this.BOXSIZE - 1) * this.state.col;
+    let offset =
+      document.documentElement.clientWidth -
+      (this.BOXSIZE - 1) * this.state.col;
     this.setState({
       sizeOffset: offset,
     });
