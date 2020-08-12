@@ -1,0 +1,18 @@
+.modal-body {
+  text-align: center;
+}
+.close {
+  float: right;
+}
+
+.pageNo {
+  margin: 7px;
+  float: left;
+}
+.footer button {
+  float: right;
+  margin: 5px;
+}
+.footer {
+  padding: 0px 8px 8px 8px;
+}

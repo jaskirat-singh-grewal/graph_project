@@ -3,8 +3,7 @@ import "../style/Graph.css";
 
 const Box = (props) => {
   let style,
-    span = null,
-    s = new String(props.className);
+    icon = null;
   if (props.offsetBool) {
     style = {
       width: props.boxSize + props.allBoxOffset + 1,
@@ -12,23 +11,27 @@ const Box = (props) => {
   } else {
     style = { width: props.boxSize + props.allBoxOffset };
   }
-  if (s.valueOf() === new String("startBox").valueOf()) {
-    span = (
-      <span
-        class="glyphicon glyphicon-move"
-        style={{
-          "font-size": props.allBoxOffset + 2 + "px",
-        }}
-      ></span>
+  if (props.className.valueOf() === "startBox".valueOf()) {
+    //if (s.valueOf() === new String("startBox").valueOf()) {
+    icon = (
+      <div>
+        <i
+          class="fa fa-arrows"
+          style={{
+            "font-size": props.allBoxOffset - 2 + "px",
+          }}
+        ></i>
+      </div>
     );
-  } else if (s.valueOf() === new String("endBox").valueOf()) {
-    span = (
-      <span
-        class="glyphicon glyphicon-record"
+  } else if (props.className.valueOf() === "endBox".valueOf()) {
+    icon = (
+      <i
+        class="fa fa-bullseye"
         style={{
-          "font-size": props.allBoxOffset + 2 + "px",
+          "font-size": props.allBoxOffset - 1 + "px",
+          "vertical-align": "middle !important",
         }}
-      ></span>
+      ></i>
     );
   }
 
@@ -41,7 +44,7 @@ const Box = (props) => {
       onPointerDown={props.onPointerDown}
       onPointerUp={props.onPointerUp}
     >
-      {span}
+      {icon}
     </button>
   );
 };

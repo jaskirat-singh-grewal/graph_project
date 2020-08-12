@@ -13,7 +13,6 @@ class Graph extends Component {
     let wallPointer = false;
     this.wallPointer = wallPointer;
 
-    const totalBoxes = ROW * COL;
     let box = Array(ROW * COL).fill(null);
     this.state = {
       box: box,
@@ -394,7 +393,7 @@ class Graph extends Component {
                   class="startBox"
                   style={{ border: "transparent", animation: "none" }}
                 >
-                  <span class="glyphicon glyphicon-move"></span>
+                  <i class="fa fa-arrows"></i>
                 </button>
                 Starting Node
               </li>
@@ -403,7 +402,7 @@ class Graph extends Component {
                   className="endBox"
                   style={{ border: "transparent", animation: "none" }}
                 >
-                  <span class="glyphicon glyphicon-record"></span>
+                  <i class="fa fa-bullseye"></i>
                 </button>
                 Ending/Target Node
               </li>

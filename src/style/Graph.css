@@ -37,7 +37,8 @@ body {
   display: table-cell;
   vertical-align: middle;
   background-color: rgb(187, 187, 187);
-  border: 1px solid rgb(180, 31, 173);
+  border-left: 1px solid rgb(180, 31, 173);
+  border-top: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -49,10 +50,16 @@ body {
   text-align: center;
   width: 25px;
   z-index: 1;
+  vertical-align: middle;
+}
+.startBox div {
+  border: "solid yellow 1px";
+  vertical-align: "middle";
 }
 .endBox {
   background: rgb(187, 187, 187);
-  border: 1px solid rgb(180, 31, 173);
+  border-left: 1px solid rgb(180, 31, 173);
+  border-top: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -67,7 +74,8 @@ body {
 }
 .transitionBox {
   background: rgb(241, 7, 7);
-  border: 1px solid rgb(180, 31, 173);
+  border-left: 1px solid rgb(180, 31, 173);
+  border-top: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -82,7 +90,8 @@ body {
 }
 .coveredBox {
   background: rgb(62, 211, 211);
-  border: 1px solid rgb(180, 31, 173);
+  border-left: 1px solid rgb(180, 31, 173);
+  border-top: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -98,7 +107,8 @@ body {
 }
 .resultBox {
   background: rgb(40, 37, 236);
-  border: 1px solid rgb(180, 31, 173);
+  border-left: 1px solid rgb(180, 31, 173);
+  border-top: 1px solid rgb(180, 31, 173);
   float: left;
   font-size: 24px;
   font-weight: bold;
@@ -213,36 +223,3 @@ body {
   100% {
   }
 }
-
-/************* Glyphicons ***************/ /*
-@font-face {
-  font-family: "Glyphicons Halflings";
-
-  src: url("../fonts/glyphicons-halflings-regular.eot");
-  src: url("../fonts/glyphicons-halflings-regular.eot?#iefix")
-      format("embedded-opentype"),
-    url("../fonts/glyphicons-halflings-regular.woff2") format("woff2"),
-    url("../fonts/glyphicons-halflings-regular.woff") format("woff"),
-    url("../fonts/glyphicons-halflings-regular.ttf") format("truetype"),
-    url("../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular")
-      format("svg");
-}
-.glyphicon {
-  position: relative;
-  top: 1px;
-  display: inline-block;
-  font-family: "Glyphicons Halflings";
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-.glyphicon-move:before {
-  content: "\e068";
-}
-.glyphicon-record:before {
-  content: "\e165";
-}
-/*********************************************/
