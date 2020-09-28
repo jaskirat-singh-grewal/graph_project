@@ -1,5 +1,7 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Project Description
+
 Project uses dijkastra's alogrithm to find the shortest path between the selected node. It gives you an idea on how dijkastra's algorithm work in general, using a really cool animation. Have Fun!
 
 Following are the react scripts if needed:-
