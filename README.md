@@ -2,7 +2,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Project Description
 
-Project uses dijkstra's alogrithm to find the shortest path between the selected node. It gives you an idea on how dijkstra's algorithm work in general, using a really cool animation. Have Fun!
+Project uses Dijkstra's alogrithm to find the shortest path between the selected node. It gives you an idea on how Dijkstra's algorithm work in general, using a really cool animation. Have Fun!
 
 Following are the react scripts if needed:-
 
