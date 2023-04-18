@@ -2,11 +2,11 @@
 
 ### https://jaskirat-singh-grewal.github.io/graph_project/
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
 ## Project Description
 
 Project uses Dijkstra's alogrithm to find the shortest path between the selected node. It gives you an idea on how Dijkstra's algorithm work in general, using a really cool animation. Have Fun!
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 Following are the react scripts if needed:-
 
