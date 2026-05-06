@@ -1,6 +1,17 @@
 import React, { Component } from "react";
+
+const ALGO_LABELS = {
+  bfs: "Breadth-First Search",
+  dfs: "Depth-First Search",
+  dijkstra: "Dijkstra's Algorithm",
+  astar: "A* Search",
+};
+
 class Nav extends Component {
   render() {
+    const { algorithm, onAlgorithmChange } = this.props;
+    const currentLabel = ALGO_LABELS[algorithm] || "Breadth-First Search";
+
     return (
       <nav
         class="navbar navbar-expand-lg navbar-dark bg-dark "
@@ -46,21 +57,30 @@ class Nav extends Component {
                 aria-haspopup="true"
                 aria-expanded="false"
               >
-                (UnderConstruction) Dropdown
+                {currentLabel}
               </a>
               <div
                 class="dropdown-menu"
                 aria-labelledby="navbarDropdownMenuLink"
               >
-                <a class="dropdown-item" href="#">
-                  Action
-                </a>
-                <a class="dropdown-item" href="#">
-                  Another action
-                </a>
-                <a class="dropdown-item" href="#">
-                  Something else here
-                </a>
+                {Object.entries(ALGO_LABELS).map(([key, label]) => (
+                  <a
+                    key={key}
+                    class="dropdown-item"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onAlgorithmChange) onAlgorithmChange(key);
+                    }}
+                    style={
+                      algorithm === key
+                        ? { backgroundColor: "#0f4c75", color: "#fff" }
+                        : {}
+                    }
+                  >
+                    {label}
+                  </a>
+                ))}
               </div>
             </li>
           </ul>

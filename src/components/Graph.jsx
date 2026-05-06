@@ -220,6 +220,14 @@ class Graph extends Component {
       });
     }
 
+    const algorithm = this.props.algorithm || "bfs";
+    const ALGO_NAMES = {
+      bfs: "Breadth-First Search",
+      dfs: "Depth-First Search",
+      dijkstra: "Dijkstra's Algorithm",
+      astar: "A* Search",
+    };
+
     const boxContent = this.state.boxContent,
       { startBoxIndex, endBoxIndex } = boxContent;
     if (startBoxIndex === null) {
@@ -232,12 +240,20 @@ class Graph extends Component {
         status: "Please select the target node before searching.",
       });
       return;
-    } else {
-      this.setState({
-        status: "Search in Progress, Have Fun!",
-        inProgress: true,
-      });
     }
+
+    if (algorithm !== "bfs") {
+      this.setState({
+        status:
+          ALGO_NAMES[algorithm] + " — Coming in Phase 2. Select BFS to search.",
+      });
+      return;
+    }
+
+    this.setState({
+      status: "BFS Search in Progress, Have Fun!",
+      inProgress: true,
+    });
     let { wallBoxes } = boxContent;
     while (wallBoxes.includes(endBoxIndex)) {
       wallBoxes.splice(wallBoxes.indexOf(endBoxIndex), 1);
