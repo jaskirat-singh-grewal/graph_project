@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/graph_project/static/css/main.49d34c07.css",
+    "main.js": "/graph_project/static/js/main.766a490e.js",
+    "index.html": "/graph_project/index.html",
+    "main.49d34c07.css.map": "/graph_project/static/css/main.49d34c07.css.map",
+    "main.766a490e.js.map": "/graph_project/static/js/main.766a490e.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.49d34c07.css",
+    "static/js/main.766a490e.js"
+  ]
+}
