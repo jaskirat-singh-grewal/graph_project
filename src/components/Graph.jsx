@@ -33,6 +33,7 @@ class Graph extends Component {
     this.BOXSIZE = 5;
     this.dragTool = null;       // active tool while pointer is held
     this.cancelRequested = false;
+    this.gridRef = React.createRef();
     this.state = {
       ...initialState(),
       row: ROW,
@@ -66,7 +67,17 @@ class Graph extends Component {
   }
 
   resize = () => {
-    const offset = document.documentElement.clientWidth - (this.BOXSIZE - 1) * this.state.col;
+    // Size cells against the *grid container's* inner width, not the viewport.
+    // The viewport now also contains a left control panel, so using
+    // documentElement.clientWidth makes cells too wide and they wrap inside
+    // each .grid-row, producing horizontal "white band" gaps in the grid.
+    const node = this.gridRef.current;
+    if (!node) return;
+    const cs = window.getComputedStyle(node);
+    const padL = parseFloat(cs.paddingLeft) || 0;
+    const padR = parseFloat(cs.paddingRight) || 0;
+    const inner = node.clientWidth - padL - padR;
+    const offset = Math.max(0, inner - (this.BOXSIZE - 1) * this.state.col);
     this.setState({ sizeOffset: offset });
   };
 
@@ -375,7 +386,7 @@ class Graph extends Component {
             onClearWalls={this.clearWalls}
             inProgress={inProgress}
           />
-          <div className="graph-grid">
+          <div className="graph-grid" ref={this.gridRef}>
             <Grid
               rows={this.state.row}
               cols={this.state.col}
