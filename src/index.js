@@ -25,7 +25,10 @@ class App extends React.Component {
           algorithm={this.state.algorithm}
           onAlgorithmChange={this.handleAlgorithmChange}
         />
-        <Graph algorithm={this.state.algorithm} />
+        <Graph
+          algorithm={this.state.algorithm}
+          onAlgorithmChange={this.handleAlgorithmChange}
+        />
       </React.StrictMode>
     );
   }

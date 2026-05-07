@@ -1,482 +1,399 @@
 import React, { Component } from "react";
 import "../style/Graph.css";
 import Grid from "./Grid";
+import ControlPanel from "./ControlPanel";
+import {
+  DEFAULT_WALL_TYPES,
+  INF,
+  makeEmptyCells,
+  tintForStart,
+} from "../cellModel";
+import { runAlgorithm, ALGORITHMS } from "../algorithms";
+
+const ROW = 22;
+const COL = 48;
+
+const initialState = () => ({
+  cells: makeEmptyCells(ROW, COL),
+  starts: [],
+  ends: [],
+  // Per-cell render state during/after a run.
+  // null when no run yet. Otherwise:
+  //   exploredOwner[i]   -> ownerStart index (closed cells)
+  //   frontierOwner[i]   -> ownerStart index (active wave cells)
+  //   pathSet            -> Set<idx> of winning path cells
+  exploredOwner: new Array(ROW * COL).fill(-1),
+  frontierOwner: new Array(ROW * COL).fill(-1),
+  pathSet: new Set(),
+});
 
 class Graph extends Component {
   constructor(props) {
     super(props);
-
-    const BOXSIZE = 5; // used for offset only, size greater than this will fit perfectly on the screen
-    this.BOXSIZE = BOXSIZE;
-    const ROW = 25,
-      COL = 50;
-    let wallPointer = false;
-    this.wallPointer = wallPointer;
-
-    const totalBoxes = ROW * COL;
-    let box = Array(ROW * COL).fill(null);
+    this.BOXSIZE = 5;
+    this.dragTool = null;       // active tool while pointer is held
+    this.cancelRequested = false;
     this.state = {
-      box: box,
-      boxContent: {
-        startBoxIndex: null,
-        endBoxIndex: null,
-        wallBoxes: [],
-        resultBoxes: [],
-        transitionBoxes: [],
-        coveredBoxes: [],
-        distance: 0,
-      },
-      status: "Please select your starting node.",
+      ...initialState(),
       row: ROW,
       col: COL,
-      sizeOffset: ROW % BOXSIZE,
+      sizeOffset: ROW % 5,
       inProgress: false,
-      reset: false,
-      speedTimer: 40,
+      speedTimer: 35,
+      tool: "start",
+      wallTypes: DEFAULT_WALL_TYPES.slice(),
+      maxStarts: 1,
+      maxEnds: 1,
+      status: "Place your start point — pick another tool from the panel to draw walls or set the end.",
+      winnerInfo: null,
     };
   }
+
   componentDidMount() {
-    window.addEventListener("resize", this.resize.bind(this));
+    window.addEventListener("resize", this.resize);
     this.resize();
   }
 
-  resize() {
-    let offset =
-      document.documentElement.clientWidth -
-      (this.BOXSIZE - 1) * this.state.col;
-    this.setState({
-      sizeOffset: offset,
-    });
-  }
-
   componentWillUnmount() {
-    window.removeEventListener("resize", this.resize.bind(this));
+    window.removeEventListener("resize", this.resize);
   }
-  getEdgeBoxes(id, visited, parent) {
-    const ROW = this.state.row,
-      COL = this.state.col;
-    const rowNum = Math.floor(id / COL);
-    const colNum = id % COL;
-    let arr = [];
-    if (rowNum !== 0 && !visited[id - COL]) {
-      arr.push(id - COL);
-      visited[id - COL] = true;
-      parent[id - COL] = id;
-    }
-    if (rowNum !== ROW - 1 && !visited[id + COL]) {
-      arr.push(id + COL);
-      visited[id + COL] = true;
-      parent[id + COL] = id;
-    }
-    if (colNum !== 0 && !visited[id - 1]) {
-      arr.push(id - 1);
-      visited[id - 1] = true;
-      parent[id - 1] = id;
-    }
-    if (colNum !== COL - 1 && !visited[id + 1]) {
-      arr.push(id + 1);
-      visited[id + 1] = true;
-      parent[id + 1] = id;
-    }
-    //To consider corner edges.
-    /*if (rowNum !== 0 && colNum !== 0 && !visited[id - COL - 1]) {
-      arr.push(id - COL - 1);
-      visited[id - COL - 1] = true;
-      parent[id - COL - 1] = id;
-    }
-    if (rowNum !== 0 && colNum !== COL - 1 && !visited[id - COL + 1]) {
-      arr.push(id - COL + 1);
-      visited[id - COL + 1] = true;
-      parent[id - COL + 1] = id;
-    }
-    if (rowNum !== ROW - 1 && colNum !== COL - 1 && !visited[id + COL + 1]) {
-      arr.push(id + COL + 1);
-      visited[id + COL + 1] = true;
-      parent[id + COL + 1] = id;
-    }
-    if (rowNum !== ROW - 1 && colNum !== 0 && !visited[id + COL - 1]) {
-      arr.push(id + COL - 1);
-      visited[id + COL - 1] = true;
-      parent[id + COL - 1] = id;
-    }*/
-    return arr;
-  }
-  boxClick(i) {
-    if (this.state.inProgress) {
-      return;
-    } else {
-      this.setState({
-        reset: false,
-        inProgress: false,
-      });
-    }
-    const boxContent = this.state.boxContent,
-      { startBoxIndex, endBoxIndex, distance } = boxContent;
-    if (startBoxIndex === null) {
-      this.setState({
-        boxContent: {
-          startBoxIndex: i,
-          endBoxIndex: null,
-          wallBoxes: this.state.boxContent.wallBoxes,
-          resultBoxes: [],
-          transitionBoxes: [],
-          coveredBoxes: [],
-          distance: distance,
-        },
-        status: "Now please select you ending or target node.",
-      });
-    } else if (startBoxIndex !== null && endBoxIndex === null) {
-      if (startBoxIndex === i) {
-        return;
-      } else {
-        this.setState({
-          boxContent: {
-            startBoxIndex: startBoxIndex,
-            endBoxIndex: i,
-            wallBoxes: this.state.boxContent.wallBoxes,
-            resultBoxes: [],
-            transitionBoxes: [],
-            coveredBoxes: [],
-            distance: distance,
-          },
-          status: "Drag or Click node to create a wall (weight = infinity)",
-        });
-      }
-    }
-    return;
-  }
-  wallPointerDown(i) {
-    if (this.state.inProgress) {
-      return;
-    }
-    const boxContent = this.state.boxContent,
-      {
-        startBoxIndex,
-        endBoxIndex,
-        resultBoxes,
-        transitionBoxes,
-        coveredBoxes,
-        wallBoxes,
-        distance,
-      } = boxContent;
-    if (startBoxIndex !== null && endBoxIndex !== null) {
-      this.wallPointer = true;
-      let newWallBoxes = wallBoxes;
-      newWallBoxes.push(i);
-      this.setState({
-        boxContent: {
-          startBoxIndex: startBoxIndex,
-          endBoxIndex: endBoxIndex,
-          wallBoxes: newWallBoxes,
-          resultBoxes: resultBoxes,
-          transitionBoxes: transitionBoxes,
-          coveredBoxes: coveredBoxes,
-          distance: distance,
-        },
-      });
-    }
-  }
-  wallPointerUp(i) {
-    if (this.state.inProgress) {
-      return;
-    }
-    this.wallPointer = false;
-  }
-  createWall(i) {
-    if (this.state.inProgress) {
-      return;
-    }
-    const boxContent = this.state.boxContent,
-      {
-        startBoxIndex,
-        endBoxIndex,
-        resultBoxes,
-        transitionBoxes,
-        coveredBoxes,
-        distance,
-      } = boxContent;
-    if (startBoxIndex !== null && endBoxIndex !== null && this.wallPointer) {
-      let newWallBoxes = this.state.boxContent.wallBoxes;
-      newWallBoxes.push(i);
-      this.setState({
-        boxContent: {
-          startBoxIndex: startBoxIndex,
-          endBoxIndex: endBoxIndex,
-          wallBoxes: newWallBoxes,
-          resultBoxes: resultBoxes,
-          transitionBoxes: transitionBoxes,
-          coveredBoxes: coveredBoxes,
-          distance: distance,
-        },
-      });
-    }
-  }
-  async startButton() {
-    if (this.state.inProgress) {
-      return;
-    } else {
-      this.setState({
-        reset: false,
-      });
-    }
 
-    const algorithm = this.props.algorithm || "bfs";
-    const ALGO_NAMES = {
-      bfs: "Breadth-First Search",
-      dfs: "Depth-First Search",
-      dijkstra: "Dijkstra's Algorithm",
-      astar: "A* Search",
-    };
-
-    const boxContent = this.state.boxContent,
-      { startBoxIndex, endBoxIndex } = boxContent;
-    if (startBoxIndex === null) {
-      this.setState({
-        status: "Please select the starting and target node before searching.",
-      });
-      return;
-    } else if (endBoxIndex === null) {
-      this.setState({
-        status: "Please select the target node before searching.",
-      });
-      return;
+  componentDidUpdate(prevProps) {
+    // Algorithm switched from outside? Reset just the run results, keep map.
+    if (prevProps.algorithm !== this.props.algorithm) {
+      this.softResetRun();
     }
+  }
 
-    if (algorithm !== "bfs") {
-      this.setState({
-        status:
-          ALGO_NAMES[algorithm] + " — Coming in Phase 2. Select BFS to search.",
-      });
-      return;
-    }
+  resize = () => {
+    const offset = document.documentElement.clientWidth - (this.BOXSIZE - 1) * this.state.col;
+    this.setState({ sizeOffset: offset });
+  };
 
-    this.setState({
-      status: "BFS Search in Progress, Have Fun!",
-      inProgress: true,
+  // ---- Tool / palette plumbing ----------------------------------------------
+
+  setTool = (tool) => this.setState({ tool });
+
+  addWallType = (wt) =>
+    this.setState((s) => ({ wallTypes: [...s.wallTypes, wt], tool: wt.id }));
+
+  removeWallType = (id) =>
+    this.setState((s) => {
+      // Erase any cells using this terrain.
+      const cells = s.cells.map((c) =>
+        c.terrainId === id ? { terrainId: null, weight: 1 } : c
+      );
+      const tool = s.tool === id ? "erase" : s.tool;
+      return { wallTypes: s.wallTypes.filter((w) => w.id !== id), cells, tool };
     });
-    let { wallBoxes } = boxContent;
-    while (wallBoxes.includes(endBoxIndex)) {
-      wallBoxes.splice(wallBoxes.indexOf(endBoxIndex), 1);
+
+  setMaxStarts = (n) =>
+    this.setState((s) => {
+      const starts = s.starts.slice(0, n);
+      return { maxStarts: n, starts };
+    });
+
+  setMaxEnds = (n) =>
+    this.setState((s) => {
+      const ends = s.ends.slice(0, n);
+      return { maxEnds: n, ends };
+    });
+
+  setSpeed = (v) => this.setState({ speedTimer: v });
+
+  clearWalls = () =>
+    this.setState((s) => ({
+      cells: makeEmptyCells(s.row, s.col),
+      exploredOwner: new Array(s.row * s.col).fill(-1),
+      frontierOwner: new Array(s.row * s.col).fill(-1),
+      pathSet: new Set(),
+      winnerInfo: null,
+      status: "Walls cleared.",
+    }));
+
+  // ---- Cell editing ---------------------------------------------------------
+
+  applyTool = (idx, isClick) => {
+    if (this.state.inProgress) return;
+    const tool = this.state.tool;
+    const { starts, ends, wallTypes, cells, maxStarts, maxEnds } = this.state;
+
+    if (tool === "start") {
+      // Don't drop a start onto an existing end or a wall cell.
+      if (ends.includes(idx)) return;
+      if (cells[idx].weight === INF) return;
+      if (starts.includes(idx)) return;
+      let nextStarts = starts.slice();
+      if (nextStarts.length >= maxStarts) {
+        nextStarts.shift(); // FIFO replace
+      }
+      nextStarts.push(idx);
+      this.setState({
+        starts: nextStarts,
+        status:
+          nextStarts.length < maxStarts
+            ? `Start ${nextStarts.length}/${maxStarts} placed. Place another start, switch tools, or hit Run.`
+            : "All starts placed. Switch to End or a wall tool.",
+      });
+      return;
     }
 
-    let transBoxes = [],
-      resultBoxes = [],
-      coveredBoxes = [],
-      distance = 0,
-      resultFlag = true;
-    let totalBoxes = this.state.row * this.state.col;
-    let visited = Array(totalBoxes).fill(false);
-    for (let i = 0; i < wallBoxes.length; i++) {
-      visited[wallBoxes[i]] = true;
-    }
-    let parent = Array(totalBoxes).fill(null);
-    visited[boxContent.startBoxIndex] = true;
-    transBoxes.push(startBoxIndex);
-    let newTransBoxes = [];
-    while (!transBoxes.includes(endBoxIndex)) {
-      distance++;
-      newTransBoxes = [];
-      for (let i = 0; i < transBoxes.length; i++) {
-        newTransBoxes.push(
-          ...this.getEdgeBoxes(transBoxes[i], visited, parent)
-        );
+    if (tool === "end") {
+      if (starts.includes(idx)) return;
+      if (cells[idx].weight === INF) return;
+      if (ends.includes(idx)) return;
+      let nextEnds = ends.slice();
+      if (nextEnds.length >= maxEnds) {
+        nextEnds.shift();
       }
-      if (newTransBoxes.length === 0) {
-        resultFlag = false;
-        coveredBoxes.push(...transBoxes);
-        this.setState({
-          status:
-            "No path found, shortest distance is infinity. Click reset to retry.",
-          inProgress: false,
-        });
-        return;
-      }
-      coveredBoxes.push(...transBoxes);
-      transBoxes = [...newTransBoxes];
-      await new Promise((resolve, reject) => {
-        if (!this.state.reset) {
-          setTimeout(resolve, this.state.speedTimer);
-        } else {
-          this.setState({
-            boxContent: {
-              startBoxIndex: null,
-              endBoxIndex: null,
-              wallBoxes: [],
-              resultBoxes: [],
-              transitionBoxes: [],
-              coveredBoxes: [],
-              distance: 0,
-            },
-            status: "Please select your starting node.",
-            inProgress: false,
-            reset: true,
-          });
-          return;
-        }
-      });
+      nextEnds.push(idx);
       this.setState({
-        boxContent: {
-          startBoxIndex: startBoxIndex,
-          endBoxIndex: endBoxIndex,
-          wallBoxes: wallBoxes,
-          resultBoxes: resultBoxes,
-          transitionBoxes: transBoxes,
-          coveredBoxes: coveredBoxes,
-          distance: distance,
-        },
+        ends: nextEnds,
+        status:
+          nextEnds.length < maxEnds
+            ? `End ${nextEnds.length}/${maxEnds} placed.`
+            : "All ends placed. Draw walls or hit Run.",
       });
+      return;
     }
-    if (resultFlag) {
-      coveredBoxes.push(...transBoxes);
-      let loopLength = distance,
-        currentResultBox = parent[endBoxIndex];
-      do {
-        resultBoxes.push(currentResultBox);
-        await new Promise((resolve, reject) => {
-          if (!this.state.reset) {
-            setTimeout(resolve, this.state.speedTimer);
-          } else {
-            this.setState({
-              boxContent: {
-                startBoxIndex: null,
-                endBoxIndex: null,
-                wallBoxes: [],
-                resultBoxes: [],
-                transitionBoxes: [],
-                coveredBoxes: [],
-                distance: 0,
-              },
-              status: "Select your starting node.",
-              inProgress: false,
-              reset: true,
-            });
-            return;
-          }
-        });
-        this.setState({
-          boxContent: {
-            startBoxIndex: startBoxIndex,
-            endBoxIndex: endBoxIndex,
-            wallBoxes: wallBoxes,
-            resultBoxes: resultBoxes,
-            coveredBoxes: coveredBoxes,
-            transitionBoxes: [],
-            distance: distance,
-          },
-        });
-        currentResultBox = parent[currentResultBox];
-        loopLength--;
-        if (loopLength === 0) {
-          this.setState({
-            inProgress: false,
-            status: "Here is the required shortest path, click reset to retry.",
-          });
-        }
-      } while (loopLength !== 0);
+
+    if (tool === "erase") {
+      // Erases walls/terrain at idx, and removes start/end if there.
+      const newCells = cells.slice();
+      if (newCells[idx].terrainId !== null) {
+        newCells[idx] = { terrainId: null, weight: 1 };
+      }
+      const nextStarts = starts.filter((s) => s !== idx);
+      const nextEnds = ends.filter((e) => e !== idx);
+      this.setState({ cells: newCells, starts: nextStarts, ends: nextEnds });
+      return;
     }
-  }
-  resetButton() {
+
+    // Otherwise it's a wall-type id. Paint terrain.
+    const wt = wallTypes.find((w) => w.id === tool);
+    if (!wt) return;
+    if (starts.includes(idx) || ends.includes(idx)) return;
+    if (cells[idx].terrainId === wt.id) return;
+    const newCells = cells.slice();
+    newCells[idx] = { terrainId: wt.id, weight: wt.weight };
+    this.setState({ cells: newCells });
+  };
+
+  onCellPointerDown = (idx) => {
+    this.dragTool = this.state.tool;
+    this.applyTool(idx, true);
+  };
+
+  onCellPointerEnter = (idx) => {
+    if (this.dragTool == null) return;
+    // For start/end, dragging would spam placements — only paint walls/erase on drag.
+    if (this.dragTool === "start" || this.dragTool === "end") return;
+    this.applyTool(idx, false);
+  };
+
+  onCellPointerUp = () => {
+    this.dragTool = null;
+  };
+
+  onCellClick = (idx) => {
+    // Click is already handled by pointerdown; keep this as a fallback for
+    // assistive devices.
+    if (this.dragTool == null) this.applyTool(idx, true);
+  };
+
+  // ---- Running --------------------------------------------------------------
+
+  softResetRun = () => {
+    this.setState((s) => ({
+      exploredOwner: new Array(s.row * s.col).fill(-1),
+      frontierOwner: new Array(s.row * s.col).fill(-1),
+      pathSet: new Set(),
+      winnerInfo: null,
+    }));
+  };
+
+  hardReset = () => {
     if (this.state.inProgress) {
-      this.setState({
-        inProgress: false,
-        reset: true,
-      });
-    } else {
-      this.setState({
-        boxContent: {
-          startBoxIndex: null,
-          endBoxIndex: null,
-          wallBoxes: [],
-          resultBoxes: [],
-          transitionBoxes: [],
-          coveredBoxes: [],
-          distance: 0,
-        },
-        status: "Please select your starting node.",
-        inProgress: false,
-        reset: false,
-      });
+      this.cancelRequested = true;
     }
-  }
+    this.setState((s) => ({
+      ...initialState(),
+      row: s.row,
+      col: s.col,
+      sizeOffset: s.sizeOffset,
+      inProgress: false,
+      speedTimer: s.speedTimer,
+      tool: s.tool,
+      wallTypes: s.wallTypes,
+      maxStarts: s.maxStarts,
+      maxEnds: s.maxEnds,
+      status: "Map cleared. Place a new start point.",
+    }));
+  };
+
+  sleep = (ms) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  run = async () => {
+    if (this.state.inProgress) return;
+    const { starts, ends, cells, row: rows, col: cols } = this.state;
+    if (!starts.length) {
+      this.setState({ status: "Place at least one start before running." });
+      return;
+    }
+    if (!ends.length) {
+      this.setState({ status: "Place at least one end before running." });
+      return;
+    }
+    const algorithm = this.props.algorithm || "bfs";
+    const algoMeta = ALGORITHMS[algorithm];
+    this.softResetRun();
+    this.cancelRequested = false;
+    this.setState({
+      inProgress: true,
+      status: `${algoMeta.label} running… ${starts.length} source${starts.length > 1 ? "s" : ""}, ${ends.length} target${ends.length > 1 ? "s" : ""}.`,
+    });
+
+    // Run the algorithm synchronously (cheap) — it returns the full trace.
+    const result = runAlgorithm(algorithm, { cells, starts, ends, rows, cols });
+
+    // Animate frames.
+    const explored = new Array(rows * cols).fill(-1);
+    const frontier = new Array(rows * cols).fill(-1);
+    for (const frame of result.frames) {
+      if (this.cancelRequested) break;
+      // Demote any cells that are explored from previous frame
+      for (let i = 0; i < frontier.length; i++) {
+        if (frontier[i] !== -1 && explored[i] === -1) {
+          // they remain frontier until next frame; explicit nothing
+        }
+      }
+      for (const { idx, ownerStart } of frame.newlyFrontier) {
+        if (explored[idx] === -1) frontier[idx] = ownerStart;
+      }
+      for (const { idx, ownerStart } of frame.newlyExplored) {
+        explored[idx] = ownerStart;
+        frontier[idx] = -1;
+      }
+      this.setState({
+        exploredOwner: explored.slice(),
+        frontierOwner: frontier.slice(),
+      });
+      await this.sleep(this.state.speedTimer);
+    }
+
+    if (this.cancelRequested) {
+      this.setState({ inProgress: false });
+      return;
+    }
+
+    if (!result.winner) {
+      this.setState({
+        inProgress: false,
+        status: "No path found from any start to any end.",
+        winnerInfo: null,
+      });
+      return;
+    }
+
+    // Animate the winning path.
+    const pathSet = new Set();
+    for (const idx of result.path) {
+      if (this.cancelRequested) break;
+      pathSet.add(idx);
+      this.setState({ pathSet: new Set(pathSet) });
+      await this.sleep(Math.max(15, this.state.speedTimer));
+    }
+
+    if (this.cancelRequested) {
+      this.setState({ inProgress: false });
+      return;
+    }
+
+    const w = result.winner;
+    this.setState({
+      inProgress: false,
+      winnerInfo: w,
+      status: `Path found! Start #${w.startIdx + 1} reached end #${ends.indexOf(w.endIdx) + 1} — length ${w.pathLength}, cost ${w.cost}.`,
+    });
+  };
+
+  // ---------------------------------------------------------------------------
 
   render() {
-    const boxContent = this.state.boxContent;
+    const {
+      cells,
+      starts,
+      ends,
+      exploredOwner,
+      frontierOwner,
+      pathSet,
+      tool,
+      wallTypes,
+      maxStarts,
+      maxEnds,
+      speedTimer,
+      inProgress,
+      status,
+      winnerInfo,
+    } = this.state;
+    const algorithm = this.props.algorithm || "bfs";
 
     return (
       <div className="graph">
-        <div className="graph-info">
-          <div className="nodeInfo">
-            <ul>
-              <li className="first">
-                <button
-                  class="startBox"
-                  style={{ border: "transparent", animation: "none" }}
-                >
-                  <span class="glyphicon glyphicon-move"></span>
-                </button>
-                Starting Node
-              </li>
-              <li>
-                <button
-                  className="endBox"
-                  style={{ border: "transparent", animation: "none" }}
-                >
-                  <span class="glyphicon glyphicon-record"></span>
-                </button>
-                Ending/Target Node
-              </li>
-              <li>
-                <box
-                  className="box"
-                  style={{ border: "transparent", animation: "none" }}
-                />
-                Empty Node
-              </li>
-              <li>
-                <box
-                  className="coveredBox"
-                  style={{ border: "transparent", animation: "none" }}
-                />
-                Covered Node
-              </li>
-              <li>
-                <box
-                  className="resultBox"
-                  style={{ border: "transparent", animation: "none" }}
-                />
-                Result Path Node
-              </li>
-            </ul>
-            <button
-              class="btn btn-primary btn-md"
-              onClick={() => this.startButton()}
-              disabled={this.state.inProgress}
-            >
-              Search Path
-            </button>
-            <button
-              class="btn btn-warning btn-md"
-              onClick={() => this.resetButton()}
-              style={{ marginLeft: "20px" }}
-            >
-              Reset
-            </button>
-          </div>
-          <div className="status">{this.state.status}</div>
+        <div className="status-bar">
+          <div className="status-bar-text">{status}</div>
+          {winnerInfo && (
+            <div className="status-bar-meta">
+              <span className="meta-tag" style={{ background: tintForStart(winnerInfo.startIdx) }}>
+                Start #{winnerInfo.startIdx + 1}
+              </span>
+              <span className="meta-num">length {winnerInfo.pathLength}</span>
+              <span className="meta-num">cost {winnerInfo.cost}</span>
+            </div>
+          )}
         </div>
-        <div className="graph-grid">
-          <Grid
-            box={this.state.box}
-            rows={this.state.row}
-            cols={this.state.col}
-            boxSize={this.BOXSIZE}
-            sizeOffset={this.state.sizeOffset}
-            boxContent={boxContent}
-            onClick={(i) => this.boxClick(i)}
-            onPointerDown={(i) => this.wallPointerDown(i)}
-            onPointerEnter={(i) => this.createWall(i)}
-            onPointerUp={(i) => this.wallPointerUp(i)}
+        <div className="graph-body">
+          <ControlPanel
+            algorithm={algorithm}
+            onAlgorithmChange={this.props.onAlgorithmChange}
+            tool={tool}
+            onToolChange={this.setTool}
+            wallTypes={wallTypes}
+            onAddWallType={this.addWallType}
+            onRemoveWallType={this.removeWallType}
+            maxStarts={maxStarts}
+            maxEnds={maxEnds}
+            placedStarts={starts.length}
+            placedEnds={ends.length}
+            onMaxStartsChange={this.setMaxStarts}
+            onMaxEndsChange={this.setMaxEnds}
+            speed={speedTimer}
+            onSpeedChange={this.setSpeed}
+            onRun={this.run}
+            onReset={this.hardReset}
+            onClearWalls={this.clearWalls}
+            inProgress={inProgress}
           />
+          <div className="graph-grid">
+            <Grid
+              rows={this.state.row}
+              cols={this.state.col}
+              boxSize={this.BOXSIZE}
+              sizeOffset={this.state.sizeOffset}
+              cells={cells}
+              starts={starts}
+              ends={ends}
+              wallTypes={wallTypes}
+              exploredOwner={exploredOwner}
+              frontierOwner={frontierOwner}
+              pathSet={pathSet}
+              onPointerDown={this.onCellPointerDown}
+              onPointerEnter={this.onCellPointerEnter}
+              onPointerUp={this.onCellPointerUp}
+              onClick={this.onCellClick}
+            />
+          </div>
         </div>
       </div>
     );

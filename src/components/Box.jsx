@@ -2,46 +2,25 @@ import React from "react";
 import "../style/Graph.css";
 
 const Box = (props) => {
-  let style,
-    span = null,
-    s = new String(props.className);
-  if (props.offsetBool) {
-    style = {
-      width: props.boxSize + props.allBoxOffset + 1,
-    };
-  } else {
-    style = { width: props.boxSize + props.allBoxOffset };
-  }
-  if (s.valueOf() === new String("startBox").valueOf()) {
-    span = (
-      <span
-        class="glyphicon glyphicon-move"
-        style={{
-          "font-size": props.allBoxOffset + 2 + "px",
-        }}
-      ></span>
-    );
-  } else if (s.valueOf() === new String("endBox").valueOf()) {
-    span = (
-      <span
-        class="glyphicon glyphicon-record"
-        style={{
-          "font-size": props.allBoxOffset + 2 + "px",
-        }}
-      ></span>
-    );
-  }
+  const width = props.offsetBool
+    ? props.boxSize + props.allBoxOffset + 1
+    : props.boxSize + props.allBoxOffset;
+
+  const style = { width };
+  if (props.bgOverride) style.background = props.bgOverride;
+
+  const className = "cell cell-" + props.role;
 
   return (
     <button
       style={style}
-      className={props.className}
+      className={className}
       onClick={props.onClick}
       onPointerEnter={props.onPointerEnter}
       onPointerDown={props.onPointerDown}
       onPointerUp={props.onPointerUp}
     >
-      {span}
+      {props.glyph && <span className="cell-glyph">{props.glyph}</span>}
     </button>
   );
 };

@@ -1,27 +1,22 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { Component } from "react";
-
-const ALGO_LABELS = {
-  bfs: "Breadth-First Search",
-  dfs: "Depth-First Search",
-  dijkstra: "Dijkstra's Algorithm",
-  astar: "A* Search",
-};
+import { ALGORITHMS } from "../algorithms";
 
 class Nav extends Component {
   render() {
     const { algorithm, onAlgorithmChange } = this.props;
-    const currentLabel = ALGO_LABELS[algorithm] || "Breadth-First Search";
+    const currentLabel = (ALGORITHMS[algorithm] || ALGORITHMS.bfs).label;
 
     return (
       <nav
-        class="navbar navbar-expand-lg navbar-dark bg-dark "
-        style={{ margin: "0px", "border-radius": "0px" }}
+        className="navbar navbar-expand-lg navbar-dark bg-dark site-nav"
+        style={{ margin: 0, borderRadius: 0 }}
       >
-        <a class="navbar-brand" href="#">
-          Dijkstra's Algorithm Visual
+        <a className="navbar-brand site-brand" href="#">
+          <span className="brand-mark">◆</span> Path Visualizer
         </a>
         <button
-          class="navbar-toggler"
+          className="navbar-toggler"
           type="button"
           data-toggle="collapse"
           data-target="#navbarNavDropdown"
@@ -29,28 +24,18 @@ class Nav extends Component {
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-          <span class="navbar-toggler-icon"></span>
+          <span className="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-          <ul class="navbar-nav">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">
-                Home <span class="sr-only">(current)</span>
+        <div className="collapse navbar-collapse" id="navbarNavDropdown">
+          <ul className="navbar-nav">
+            <li className="nav-item active">
+              <a className="nav-link" href="#">
+                Home <span className="sr-only">(current)</span>
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                (UnderConstruction) Features
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                (UnderConstruction) Have Your Own Graph?
-              </a>
-            </li>
-            <li class="nav-item dropdown">
+            <li className="nav-item dropdown">
               <a
-                class="nav-link dropdown-toggle"
+                className="nav-link dropdown-toggle"
                 href="#"
                 id="navbarDropdownMenuLink"
                 data-toggle="dropdown"
@@ -59,14 +44,11 @@ class Nav extends Component {
               >
                 {currentLabel}
               </a>
-              <div
-                class="dropdown-menu"
-                aria-labelledby="navbarDropdownMenuLink"
-              >
-                {Object.entries(ALGO_LABELS).map(([key, label]) => (
+              <div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                {Object.entries(ALGORITHMS).map(([key, meta]) => (
                   <a
                     key={key}
-                    class="dropdown-item"
+                    className="dropdown-item"
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -78,12 +60,15 @@ class Nav extends Component {
                         : {}
                     }
                   >
-                    {label}
+                    {meta.label}
                   </a>
                 ))}
               </div>
             </li>
           </ul>
+          <span className="nav-tagline">
+            BFS · DFS · Dijkstra · A* — multi-source, weighted terrain
+          </span>
         </div>
       </nav>
     );
