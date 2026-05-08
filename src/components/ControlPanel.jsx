@@ -8,6 +8,15 @@ const TOOL_LABELS = {
   erase: "Eraser",
 };
 
+// Speed-slider mapping: slider value 0 = slow, 100 = fast.
+// Internally we still store milliseconds-per-frame.
+const SPEED_MIN_MS = 5;    // fastest
+const SPEED_MAX_MS = 200;  // slowest
+const speedToSliderPct = (ms) =>
+  Math.round(((SPEED_MAX_MS - ms) / (SPEED_MAX_MS - SPEED_MIN_MS)) * 100);
+const sliderPctToSpeed = (pct) =>
+  Math.round(SPEED_MAX_MS - (pct / 100) * (SPEED_MAX_MS - SPEED_MIN_MS));
+
 class ControlPanel extends Component {
   state = {
     showAddWall: false,
@@ -17,6 +26,27 @@ class ControlPanel extends Component {
   };
 
   setTool = (tool) => this.props.onToolChange(tool);
+
+  // ---- Panel resize (drag the right edge) ----
+  onResizerMouseDown = (e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = this.props.panelWidth;
+    const minW = this.props.panelMinWidth || 200;
+    const onMove = (ev) => {
+      const maxW = Math.floor(window.innerWidth / 2);
+      const w = Math.max(minW, Math.min(maxW, startW + (ev.clientX - startX)));
+      this.props.onPanelWidthChange(w);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      document.body.classList.remove("cp-resizing");
+    };
+    document.body.classList.add("cp-resizing");
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
 
   startAddWall = () =>
     this.setState({ showAddWall: true, draftName: "", draftColor: "#d94f70", draftWeight: 3 });
@@ -61,28 +91,33 @@ class ControlPanel extends Component {
 
     const algoMeta = ALGORITHMS[algorithm] || ALGORITHMS.bfs;
     const showWeights = algoMeta.weighted;
+    // For unweighted algorithms, only show the built-in Hard Wall — extra
+    // weighted terrain types have no semantic effect and just clutter the UI.
+    const visibleWallTypes = showWeights
+      ? wallTypes
+      : wallTypes.filter((w) => w.builtin);
+    const panelWidth = this.props.panelWidth;
 
     return (
-      <aside className="control-panel">
+      <aside className="control-panel" style={{ width: panelWidth }}>
         <section className="cp-section">
           <h3 className="cp-title">Algorithm</h3>
-          <div className="cp-algo-buttons">
+          <select
+            className="cp-select"
+            value={algorithm}
+            onChange={(e) => onAlgorithmChange(e.target.value)}
+            disabled={inProgress}
+          >
             {Object.entries(ALGORITHMS).map(([key, meta]) => (
-              <button
-                key={key}
-                className={"cp-pill" + (algorithm === key ? " active" : "")}
-                onClick={() => onAlgorithmChange(key)}
-                disabled={inProgress}
-                title={meta.label}
-              >
-                {meta.label.split(" ")[0]}
-              </button>
+              <option key={key} value={key}>
+                {meta.label}
+              </option>
             ))}
-          </div>
+          </select>
           <div className="cp-algo-hint">
             {showWeights
               ? "Weighted: terrain weights apply."
-              : "Unweighted: terrain weights ignored (treated as 1)."}
+              : "Unweighted: only the Hard Wall blocks; extra terrains aren't shown."}
           </div>
         </section>
 
@@ -104,9 +139,9 @@ class ControlPanel extends Component {
         </section>
 
         <section className="cp-section">
-          <h3 className="cp-title">Wall / Terrain Palette</h3>
+          <h3 className="cp-title">{showWeights ? "Wall / Terrain Palette" : "Wall"}</h3>
           <div className="cp-walls">
-            {wallTypes.map((wt) => {
+            {visibleWallTypes.map((wt) => {
               const active = tool === wt.id;
               return (
                 <div
@@ -143,7 +178,7 @@ class ControlPanel extends Component {
             })}
           </div>
 
-          {this.state.showAddWall ? (
+          {showWeights && this.state.showAddWall ? (
             <div className="cp-wall-form">
               <input
                 className="cp-input"
@@ -177,7 +212,7 @@ class ControlPanel extends Component {
                 </button>
               </div>
             </div>
-          ) : (
+          ) : showWeights ? (
             <button
               className="cp-btn cp-btn-add"
               onClick={this.startAddWall}
@@ -185,7 +220,7 @@ class ControlPanel extends Component {
             >
               + New wall type
             </button>
-          )}
+          ) : null}
         </section>
 
         <section className="cp-section">
@@ -240,12 +275,15 @@ class ControlPanel extends Component {
             <label>Speed</label>
             <input
               type="range"
-              min={5}
-              max={200}
-              value={speed}
-              onChange={(e) => onSpeedChange(Number(e.target.value))}
+              min={0}
+              max={100}
+              value={speedToSliderPct(speed)}
+              onChange={(e) => onSpeedChange(sliderPctToSpeed(Number(e.target.value)))}
             />
-            <span className="cp-speed-num">{speed}ms / frame</span>
+            <div className="cp-speed-labels">
+              <span>Slow</span>
+              <span>Fast</span>
+            </div>
           </div>
         </section>
 
@@ -268,6 +306,11 @@ class ControlPanel extends Component {
             Clear walls
           </button>
         </section>
+        <div
+          className="cp-resizer"
+          onMouseDown={this.onResizerMouseDown}
+          title="Drag to resize panel"
+        />
       </aside>
     );
   }

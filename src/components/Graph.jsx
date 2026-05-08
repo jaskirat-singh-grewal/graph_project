@@ -4,17 +4,26 @@ import Grid from "./Grid";
 import ControlPanel from "./ControlPanel";
 import {
   DEFAULT_WALL_TYPES,
+  HARD_WALL_ID,
   INF,
   makeEmptyCells,
   tintForStart,
 } from "../cellModel";
 import { runAlgorithm, ALGORITHMS } from "../algorithms";
 
-const ROW = 22;
-const COL = 48;
+// Initial fallback dims; resize() recomputes once the layout is measured.
+const INITIAL_ROW = 22;
+const INITIAL_COL = 48;
 
-const initialState = () => ({
-  cells: makeEmptyCells(ROW, COL),
+// Target visual cell footprint for the responsive layout. Cells are square-ish.
+const TARGET_CELL = 28;
+
+// Default + bounds for the resizable left panel.
+const PANEL_DEFAULT = 280;
+const PANEL_MIN = 200;
+
+const initialState = (rows, cols) => ({
+  cells: makeEmptyCells(rows, cols),
   starts: [],
   ends: [],
   // Per-cell render state during/after a run.
@@ -22,8 +31,8 @@ const initialState = () => ({
   //   exploredOwner[i]   -> ownerStart index (closed cells)
   //   frontierOwner[i]   -> ownerStart index (active wave cells)
   //   pathSet            -> Set<idx> of winning path cells
-  exploredOwner: new Array(ROW * COL).fill(-1),
-  frontierOwner: new Array(ROW * COL).fill(-1),
+  exploredOwner: new Array(rows * cols).fill(-1),
+  frontierOwner: new Array(rows * cols).fill(-1),
   pathSet: new Set(),
 });
 
@@ -35,16 +44,17 @@ class Graph extends Component {
     this.cancelRequested = false;
     this.gridRef = React.createRef();
     this.state = {
-      ...initialState(),
-      row: ROW,
-      col: COL,
-      sizeOffset: ROW % 5,
+      ...initialState(INITIAL_ROW, INITIAL_COL),
+      row: INITIAL_ROW,
+      col: INITIAL_COL,
+      sizeOffset: INITIAL_ROW % 5,
       inProgress: false,
       speedTimer: 35,
       tool: "start",
       wallTypes: DEFAULT_WALL_TYPES.slice(),
       maxStarts: 1,
       maxEnds: 1,
+      panelWidth: PANEL_DEFAULT,
       status: "Place your start point — pick another tool from the panel to draw walls or set the end.",
       winnerInfo: null,
     };
@@ -52,33 +62,80 @@ class Graph extends Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.resize);
+    // Observe the grid container directly so we react to ANY size change —
+    // window resizes, panel-resizer drags, font-size changes, etc.
+    if (typeof ResizeObserver !== "undefined" && this.gridRef.current) {
+      this.ro = new ResizeObserver(() => this.resize());
+      this.ro.observe(this.gridRef.current);
+    }
     this.resize();
   }
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.resize);
+    if (this.ro) this.ro.disconnect();
   }
 
   componentDidUpdate(prevProps) {
     // Algorithm switched from outside? Reset just the run results, keep map.
     if (prevProps.algorithm !== this.props.algorithm) {
       this.softResetRun();
+      // If the new algorithm is unweighted, only the built-in Hard Wall makes
+      // sense as a "wall" tool. If the user had a custom/weighted terrain
+      // selected, fall back to the Hard Wall.
+      const meta = ALGORITHMS[this.props.algorithm];
+      if (meta && !meta.weighted) {
+        const t = this.state.tool;
+        const wt = this.state.wallTypes.find((w) => w.id === t);
+        if (wt && !wt.builtin) {
+          this.setState({ tool: HARD_WALL_ID });
+        }
+      }
     }
   }
 
+  setPanelWidth = (w) => this.setState({ panelWidth: w });
+
   resize = () => {
-    // Size cells against the *grid container's* inner width, not the viewport.
-    // The viewport now also contains a left control panel, so using
-    // documentElement.clientWidth makes cells too wide and they wrap inside
-    // each .grid-row, producing horizontal "white band" gaps in the grid.
+    // Size the grid against the actual .graph-grid container (not the viewport),
+    // and also choose row/col counts that fill the available area at TARGET_CELL.
     const node = this.gridRef.current;
     if (!node) return;
     const cs = window.getComputedStyle(node);
     const padL = parseFloat(cs.paddingLeft) || 0;
     const padR = parseFloat(cs.paddingRight) || 0;
-    const inner = node.clientWidth - padL - padR;
-    const offset = Math.max(0, inner - (this.BOXSIZE - 1) * this.state.col);
-    this.setState({ sizeOffset: offset });
+    const padT = parseFloat(cs.paddingTop) || 0;
+    const padB = parseFloat(cs.paddingBottom) || 0;
+    const innerW = node.clientWidth - padL - padR;
+    const innerH = node.clientHeight - padT - padB;
+    if (innerW <= 0 || innerH <= 0) return;
+
+    const cols = Math.max(10, Math.floor(innerW / TARGET_CELL));
+    const rows = Math.max(8, Math.floor(innerH / TARGET_CELL));
+    const offset = Math.max(0, innerW - (this.BOXSIZE - 1) * cols);
+
+    if (cols !== this.state.col || rows !== this.state.row) {
+      // Resize means the state arrays' length is wrong — wipe the board.
+      // Cancel any in-flight animation; preserve user prefs.
+      this.cancelRequested = true;
+      this.setState((s) => ({
+        ...initialState(rows, cols),
+        row: rows,
+        col: cols,
+        sizeOffset: offset,
+        inProgress: false,
+        speedTimer: s.speedTimer,
+        tool: s.tool,
+        wallTypes: s.wallTypes,
+        maxStarts: s.maxStarts,
+        maxEnds: s.maxEnds,
+        panelWidth: s.panelWidth,
+        status: "Grid resized — board cleared. Place a new start point.",
+        winnerInfo: null,
+      }));
+    } else if (offset !== this.state.sizeOffset) {
+      this.setState({ sizeOffset: offset });
+    }
   };
 
   // ---- Tool / palette plumbing ----------------------------------------------
@@ -228,7 +285,7 @@ class Graph extends Component {
       this.cancelRequested = true;
     }
     this.setState((s) => ({
-      ...initialState(),
+      ...initialState(s.row, s.col),
       row: s.row,
       col: s.col,
       sizeOffset: s.sizeOffset,
@@ -238,6 +295,7 @@ class Graph extends Component {
       wallTypes: s.wallTypes,
       maxStarts: s.maxStarts,
       maxEnds: s.maxEnds,
+      panelWidth: s.panelWidth,
       status: "Map cleared. Place a new start point.",
     }));
   };
@@ -347,6 +405,7 @@ class Graph extends Component {
       inProgress,
       status,
       winnerInfo,
+      panelWidth,
     } = this.state;
     const algorithm = this.props.algorithm || "bfs";
 
@@ -385,6 +444,9 @@ class Graph extends Component {
             onReset={this.hardReset}
             onClearWalls={this.clearWalls}
             inProgress={inProgress}
+            panelWidth={panelWidth}
+            panelMinWidth={PANEL_MIN}
+            onPanelWidthChange={this.setPanelWidth}
           />
           <div className="graph-grid" ref={this.gridRef}>
             <Grid

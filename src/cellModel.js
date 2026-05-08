@@ -15,7 +15,7 @@ export const INF = Infinity;
 export const HARD_WALL_ID = "hard_wall";
 
 export const DEFAULT_WALL_TYPES = [
-  { id: HARD_WALL_ID, name: "Hard Wall", color: "#3a1f55", weight: INF, builtin: true },
+  { id: HARD_WALL_ID, name: "Hard Wall", color: "#e63946", weight: INF, builtin: true },
   { id: "mud", name: "Mud", color: "#b97a2c", weight: 5, builtin: false },
   { id: "swamp", name: "Swamp", color: "#2c8a6b", weight: 10, builtin: false },
 ];

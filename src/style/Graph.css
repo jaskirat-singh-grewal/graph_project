@@ -95,7 +95,7 @@ body {
 
 /* ---- Control panel ---- */
 .control-panel {
-  width: 280px;
+  /* Width is set inline by Graph.jsx (state.panelWidth), draggable via .cp-resizer. */
   flex-shrink: 0;
   background: #131a36;
   border-right: 1px solid rgba(180, 31, 173, 0.35);
@@ -103,6 +103,57 @@ body {
   color: #e7eaf6;
   overflow-y: auto;
   max-height: calc(100vh - 56px - 60px);
+  position: relative;
+  box-sizing: border-box;
+}
+/* Drag handle on the right edge of the panel. */
+.cp-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 5;
+}
+.cp-resizer:hover,
+body.cp-resizing .cp-resizer {
+  background: rgba(65, 234, 212, 0.35);
+}
+body.cp-resizing { cursor: col-resize; user-select: none; }
+/* Algorithm dropdown — matches the dark/neon theme. */
+.cp-select {
+  width: 100%;
+  background: #1f2a52;
+  color: #e7eaf6;
+  border: 1px solid #2c3866;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #41ead4 50%),
+    linear-gradient(135deg, #41ead4 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.cp-select:hover:not(:disabled) { border-color: #ff7e5f; }
+.cp-select:focus { outline: none; border-color: #41ead4; }
+.cp-select:disabled { opacity: 0.5; cursor: not-allowed; }
+.cp-select option { background: #1f2a52; color: #e7eaf6; }
+/* Slow ↔ Fast labels under the speed slider. */
+.cp-speed-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #8c93b8;
+  font-family: Menlo, monospace;
+  margin-top: 2px;
 }
 .cp-section {
   margin-bottom: 18px;
@@ -118,32 +169,6 @@ body {
   margin: 0 0 10px;
   font-weight: 700;
 }
-.cp-algo-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-.cp-pill {
-  background: #1f2a52;
-  color: #d0d4e6;
-  border: 1px solid #2c3866;
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.cp-pill:hover:not(:disabled) {
-  border-color: #ff7e5f;
-  color: #fff;
-}
-.cp-pill.active {
-  background: #ff7e5f;
-  color: #0a0e22;
-  border-color: #ff7e5f;
-}
-.cp-pill:disabled { opacity: 0.5; cursor: not-allowed; }
 .cp-algo-hint {
   margin-top: 8px;
   font-size: 11px;
@@ -304,7 +329,6 @@ body {
 .cp-speed { display: flex; flex-direction: column; gap: 4px; }
 .cp-speed label { margin: 0; font-size: 12px; color: #d0d4e6; }
 .cp-speed input { width: 100%; }
-.cp-speed-num { font-size: 11px; color: #8c93b8; font-family: Menlo, monospace; }
 .cp-actions { display: flex; flex-direction: column; gap: 6px; }
 .cp-btn {
   background: #1f2a52;
