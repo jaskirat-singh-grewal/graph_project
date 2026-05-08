@@ -597,7 +597,7 @@ const runBidirectional = ({ cells, starts, ends, rows, cols }) => {
     // consistent with the forward palette. We use ownerStart=-1 to suppress
     // tinting; the renderer falls back to a neutral tint then.
     const nextB = [];
-    const exploredB = frontB.map((idx) => ({ idx, ownerStart: -1 }));
+    const exploredB = frontB.map((idx) => ({ idx, ownerStart: -2 }));
     for (const cell of frontB) {
       for (const nb of neighborsOf(cell, rows, cols)) {
         if (visitedB[nb] || cells[nb].weight === INF) continue;
@@ -609,7 +609,7 @@ const runBidirectional = ({ cells, starts, ends, rows, cols }) => {
       }
       if (meet) break;
     }
-    const frontierB = nextB.map((idx) => ({ idx, ownerStart: -1 }));
+    const frontierB = nextB.map((idx) => ({ idx, ownerStart: -2 }));
     frames.push({ newlyExplored: exploredB, newlyFrontier: frontierB });
     frontB = nextB;
   }

@@ -22,6 +22,9 @@ body {
   background: linear-gradient(90deg, #0a0e22 0%, #1a1340 100%) !important;
   border-bottom: 1px solid rgba(180, 31, 173, 0.4);
   padding: 8px 22px;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
 }
 .site-brand {
   color: #ff7e5f !important;
@@ -41,12 +44,13 @@ body {
 .nav-selected-algo {
   margin-left: auto;
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   font-size: 13px;
+  line-height: 1;
   background: rgba(255, 126, 95, 0.08);
   border: 1px solid rgba(255, 126, 95, 0.25);
-  padding: 4px 12px;
+  padding: 6px 12px;
   border-radius: 14px;
 }
 .nav-selected-label { color: #8c93b8; font-size: 12px; letter-spacing: 0.4px; }

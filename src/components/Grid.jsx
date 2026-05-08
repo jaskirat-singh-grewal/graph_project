@@ -2,6 +2,12 @@ import React, { Component } from "react";
 import Box from "./Box";
 import { tintForStart } from "../cellModel";
 
+// ownerStart sentinel for the end-side wave in Bidirectional Search.
+// Rendered with a distinct neutral tint so the user can tell forward and
+// backward fronts apart visually.
+const END_WAVE_OWNER = -2;
+const END_WAVE_TINT = "#cdd2e6";
+
 const buildWallColorMap = (wallTypes) => {
   const m = {};
   for (const w of wallTypes) m[w.id] = w.color;
@@ -30,11 +36,17 @@ class Grid extends Component {
 
     if (exploredOwner[idx] !== -1 && role !== "wall") {
       role = "explored";
-      bgOverride = tintForStart(exploredOwner[idx]);
+      bgOverride =
+        exploredOwner[idx] === END_WAVE_OWNER
+          ? END_WAVE_TINT
+          : tintForStart(exploredOwner[idx]);
     }
     if (frontierOwner[idx] !== -1 && role !== "wall") {
       role = "frontier";
-      bgOverride = tintForStart(frontierOwner[idx]);
+      bgOverride =
+        frontierOwner[idx] === END_WAVE_OWNER
+          ? END_WAVE_TINT
+          : tintForStart(frontierOwner[idx]);
     }
 
     if (pathSet.has(idx)) {
@@ -60,7 +72,6 @@ class Grid extends Component {
         role={role}
         bgOverride={bgOverride}
         glyph={glyph}
-        onClick={() => this.props.onClick(idx)}
         onPointerDown={() => this.props.onPointerDown(idx)}
         onPointerEnter={() => this.props.onPointerEnter(idx)}
         onPointerUp={() => this.props.onPointerUp(idx)}

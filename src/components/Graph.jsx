@@ -266,10 +266,6 @@ class Graph extends Component {
     this.dragTool = null;
   };
 
-  onCellClick = (idx) => {
-    if (this.dragTool == null) this.applyTool(idx, true);
-  };
-
   // ---- Running --------------------------------------------------------------
 
   softResetRun = () => {
@@ -459,7 +455,6 @@ class Graph extends Component {
               onPointerDown={this.onCellPointerDown}
               onPointerEnter={this.onCellPointerEnter}
               onPointerUp={this.onCellPointerUp}
-              onClick={this.onCellClick}
             />
           </div>
         </div>

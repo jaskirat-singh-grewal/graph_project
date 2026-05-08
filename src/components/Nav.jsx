@@ -15,19 +15,10 @@ class Nav extends Component {
         <a className="navbar-brand site-brand" href="#">
           <span className="brand-mark">◆</span> Path Visualizer
         </a>
-        <div className="collapse navbar-collapse show" id="navbarNavDropdown">
-          <ul className="navbar-nav">
-            <li className="nav-item active">
-              <a className="nav-link" href="#">
-                Home <span className="sr-only">(current)</span>
-              </a>
-            </li>
-          </ul>
-          <span className="nav-selected-algo">
-            <span className="nav-selected-label">Selected Algorithm:</span>{" "}
-            <span className="nav-selected-value">{currentLabel}</span>
-          </span>
-        </div>
+        <span className="nav-selected-algo">
+          <span className="nav-selected-label">Selected Algorithm:</span>{" "}
+          <span className="nav-selected-value">{currentLabel}</span>
+        </span>
       </nav>
     );
   }

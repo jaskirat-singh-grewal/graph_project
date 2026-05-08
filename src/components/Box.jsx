@@ -19,7 +19,6 @@ const Box = (props) => {
     <button
       style={style}
       className={className}
-      onClick={props.onClick}
       onPointerEnter={props.onPointerEnter}
       onPointerDown={props.onPointerDown}
       onPointerUp={props.onPointerUp}

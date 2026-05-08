@@ -198,6 +198,52 @@ class ControlPanel extends Component {
         </section>
 
         <section className="cp-section">
+          <h3 className="cp-title">Sources & Targets</h3>
+          <div className="cp-counter">
+            <label>Start points</label>
+            <input
+              type="number"
+              min={1}
+              max={6}
+              value={maxStarts}
+              onChange={(e) =>
+                onMaxStartsChange(Math.max(1, Math.min(6, Number(e.target.value) || 1)))
+              }
+              disabled={inProgress}
+            />
+            <span className="cp-counter-status">
+              {placedStarts}/{maxStarts} placed
+            </span>
+          </div>
+          <div className="cp-counter">
+            <label>End points</label>
+            <input
+              type="number"
+              min={1}
+              max={6}
+              value={maxEnds}
+              onChange={(e) =>
+                onMaxEndsChange(Math.max(1, Math.min(6, Number(e.target.value) || 1)))
+              }
+              disabled={inProgress}
+            />
+            <span className="cp-counter-status">
+              {placedEnds}/{maxEnds} placed
+            </span>
+          </div>
+          <div className="cp-tints">
+            {Array(maxStarts).fill(0).map((_, i) => (
+              <span
+                key={i}
+                className="cp-tint-dot"
+                style={{ background: START_TINTS[i % START_TINTS.length] }}
+                title={`Start #${i + 1}`}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="cp-section">
           <h3 className="cp-title">Tools</h3>
           <div className="cp-tool-grid">
             {["start", "end", "erase"].map((t) => (
@@ -300,52 +346,6 @@ class ControlPanel extends Component {
               + New wall type
             </button>
           ) : null}
-        </section>
-
-        <section className="cp-section">
-          <h3 className="cp-title">Sources & Targets</h3>
-          <div className="cp-counter">
-            <label>Start points</label>
-            <input
-              type="number"
-              min={1}
-              max={6}
-              value={maxStarts}
-              onChange={(e) =>
-                onMaxStartsChange(Math.max(1, Math.min(6, Number(e.target.value) || 1)))
-              }
-              disabled={inProgress}
-            />
-            <span className="cp-counter-status">
-              {placedStarts}/{maxStarts} placed
-            </span>
-          </div>
-          <div className="cp-counter">
-            <label>End points</label>
-            <input
-              type="number"
-              min={1}
-              max={6}
-              value={maxEnds}
-              onChange={(e) =>
-                onMaxEndsChange(Math.max(1, Math.min(6, Number(e.target.value) || 1)))
-              }
-              disabled={inProgress}
-            />
-            <span className="cp-counter-status">
-              {placedEnds}/{maxEnds} placed
-            </span>
-          </div>
-          <div className="cp-tints">
-            {Array(maxStarts).fill(0).map((_, i) => (
-              <span
-                key={i}
-                className="cp-tint-dot"
-                style={{ background: START_TINTS[i % START_TINTS.length] }}
-                title={`Start #${i + 1}`}
-              />
-            ))}
-          </div>
         </section>
 
         <section className="cp-section">
