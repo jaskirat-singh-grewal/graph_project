@@ -15,7 +15,8 @@ import { runAlgorithm, ALGORITHMS } from "../algorithms";
 const INITIAL_ROW = 22;
 const INITIAL_COL = 48;
 
-// Target visual cell footprint for the responsive layout. Cells are square-ish.
+// Target cell footprint for picking row/col counts. Cells are then sized to
+// tile the container exactly (so neither width nor height leaves a gap).
 const TARGET_CELL = 28;
 
 // Default + bounds for the resizable left panel.
@@ -27,10 +28,9 @@ const initialState = (rows, cols) => ({
   starts: [],
   ends: [],
   // Per-cell render state during/after a run.
-  // null when no run yet. Otherwise:
-  //   exploredOwner[i]   -> ownerStart index (closed cells)
-  //   frontierOwner[i]   -> ownerStart index (active wave cells)
-  //   pathSet            -> Set<idx> of winning path cells
+  //   exploredOwner[i] -> ownerStart index (closed cells)
+  //   frontierOwner[i] -> ownerStart index (active wave cells)
+  //   pathSet          -> Set<idx> of winning path cells
   exploredOwner: new Array(rows * cols).fill(-1),
   frontierOwner: new Array(rows * cols).fill(-1),
   pathSet: new Set(),
@@ -39,7 +39,6 @@ const initialState = (rows, cols) => ({
 class Graph extends Component {
   constructor(props) {
     super(props);
-    this.BOXSIZE = 5;
     this.dragTool = null;       // active tool while pointer is held
     this.cancelRequested = false;
     this.gridRef = React.createRef();
@@ -47,7 +46,8 @@ class Graph extends Component {
       ...initialState(INITIAL_ROW, INITIAL_COL),
       row: INITIAL_ROW,
       col: INITIAL_COL,
-      sizeOffset: INITIAL_ROW % 5,
+      cellW: 28,
+      cellH: 28,
       inProgress: false,
       speedTimer: 35,
       tool: "start",
@@ -62,8 +62,6 @@ class Graph extends Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.resize);
-    // Observe the grid container directly so we react to ANY size change —
-    // window resizes, panel-resizer drags, font-size changes, etc.
     if (typeof ResizeObserver !== "undefined" && this.gridRef.current) {
       this.ro = new ResizeObserver(() => this.resize());
       this.ro.observe(this.gridRef.current);
@@ -77,19 +75,14 @@ class Graph extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    // Algorithm switched from outside? Reset just the run results, keep map.
     if (prevProps.algorithm !== this.props.algorithm) {
       this.softResetRun();
-      // If the new algorithm is unweighted, only the built-in Hard Wall makes
-      // sense as a "wall" tool. If the user had a custom/weighted terrain
-      // selected, fall back to the Hard Wall.
+      // If the new algo is unweighted, fall the wall tool back to Hard Wall
+      // when a custom/weighted terrain was selected.
       const meta = ALGORITHMS[this.props.algorithm];
       if (meta && !meta.weighted) {
-        const t = this.state.tool;
-        const wt = this.state.wallTypes.find((w) => w.id === t);
-        if (wt && !wt.builtin) {
-          this.setState({ tool: HARD_WALL_ID });
-        }
+        const wt = this.state.wallTypes.find((w) => w.id === this.state.tool);
+        if (wt && !wt.builtin) this.setState({ tool: HARD_WALL_ID });
       }
     }
   }
@@ -97,8 +90,8 @@ class Graph extends Component {
   setPanelWidth = (w) => this.setState({ panelWidth: w });
 
   resize = () => {
-    // Size the grid against the actual .graph-grid container (not the viewport),
-    // and also choose row/col counts that fill the available area at TARGET_CELL.
+    // Pick row/col counts that fill the .graph-grid container at TARGET_CELL,
+    // then size cells to tile exactly — so neither right nor bottom shows a gap.
     const node = this.gridRef.current;
     if (!node) return;
     const cs = window.getComputedStyle(node);
@@ -112,17 +105,18 @@ class Graph extends Component {
 
     const cols = Math.max(10, Math.floor(innerW / TARGET_CELL));
     const rows = Math.max(8, Math.floor(innerH / TARGET_CELL));
-    const offset = Math.max(0, innerW - (this.BOXSIZE - 1) * cols);
+    const cellW = Math.floor(innerW / cols);
+    const cellH = Math.floor(innerH / rows);
 
     if (cols !== this.state.col || rows !== this.state.row) {
-      // Resize means the state arrays' length is wrong — wipe the board.
-      // Cancel any in-flight animation; preserve user prefs.
+      // State arrays' length is wrong — wipe the board.
       this.cancelRequested = true;
       this.setState((s) => ({
         ...initialState(rows, cols),
         row: rows,
         col: cols,
-        sizeOffset: offset,
+        cellW,
+        cellH,
         inProgress: false,
         speedTimer: s.speedTimer,
         tool: s.tool,
@@ -133,8 +127,8 @@ class Graph extends Component {
         status: "Grid resized — board cleared. Place a new start point.",
         winnerInfo: null,
       }));
-    } else if (offset !== this.state.sizeOffset) {
-      this.setState({ sizeOffset: offset });
+    } else if (cellW !== this.state.cellW || cellH !== this.state.cellH) {
+      this.setState({ cellW, cellH });
     }
   };
 
@@ -147,7 +141,6 @@ class Graph extends Component {
 
   removeWallType = (id) =>
     this.setState((s) => {
-      // Erase any cells using this terrain.
       const cells = s.cells.map((c) =>
         c.terrainId === id ? { terrainId: null, weight: 1 } : c
       );
@@ -187,14 +180,20 @@ class Graph extends Component {
     const { starts, ends, wallTypes, cells, maxStarts, maxEnds } = this.state;
 
     if (tool === "start") {
-      // Don't drop a start onto an existing end or a wall cell.
-      if (ends.includes(idx)) return;
       if (cells[idx].weight === INF) return;
-      if (starts.includes(idx)) return;
-      let nextStarts = starts.slice();
-      if (nextStarts.length >= maxStarts) {
-        nextStarts.shift(); // FIFO replace
+      // Clicking an already-placed start REMOVES it (toggle).
+      if (starts.includes(idx)) {
+        const nextStarts = starts.filter((s) => s !== idx);
+        this.setState({
+          starts: nextStarts,
+          status: `Start removed — ${nextStarts.length}/${maxStarts} placed.`,
+        });
+        return;
       }
+      // Clicking an existing end with the start tool just no-ops (don't shadow).
+      if (ends.includes(idx)) return;
+      let nextStarts = starts.slice();
+      if (nextStarts.length >= maxStarts) nextStarts.shift(); // FIFO replace
       nextStarts.push(idx);
       this.setState({
         starts: nextStarts,
@@ -207,13 +206,19 @@ class Graph extends Component {
     }
 
     if (tool === "end") {
-      if (starts.includes(idx)) return;
       if (cells[idx].weight === INF) return;
-      if (ends.includes(idx)) return;
-      let nextEnds = ends.slice();
-      if (nextEnds.length >= maxEnds) {
-        nextEnds.shift();
+      // Clicking an already-placed end REMOVES it (toggle).
+      if (ends.includes(idx)) {
+        const nextEnds = ends.filter((e) => e !== idx);
+        this.setState({
+          ends: nextEnds,
+          status: `End removed — ${nextEnds.length}/${maxEnds} placed.`,
+        });
+        return;
       }
+      if (starts.includes(idx)) return;
+      let nextEnds = ends.slice();
+      if (nextEnds.length >= maxEnds) nextEnds.shift();
       nextEnds.push(idx);
       this.setState({
         ends: nextEnds,
@@ -226,7 +231,6 @@ class Graph extends Component {
     }
 
     if (tool === "erase") {
-      // Erases walls/terrain at idx, and removes start/end if there.
       const newCells = cells.slice();
       if (newCells[idx].terrainId !== null) {
         newCells[idx] = { terrainId: null, weight: 1 };
@@ -254,7 +258,6 @@ class Graph extends Component {
 
   onCellPointerEnter = (idx) => {
     if (this.dragTool == null) return;
-    // For start/end, dragging would spam placements — only paint walls/erase on drag.
     if (this.dragTool === "start" || this.dragTool === "end") return;
     this.applyTool(idx, false);
   };
@@ -264,8 +267,6 @@ class Graph extends Component {
   };
 
   onCellClick = (idx) => {
-    // Click is already handled by pointerdown; keep this as a fallback for
-    // assistive devices.
     if (this.dragTool == null) this.applyTool(idx, true);
   };
 
@@ -288,7 +289,8 @@ class Graph extends Component {
       ...initialState(s.row, s.col),
       row: s.row,
       col: s.col,
-      sizeOffset: s.sizeOffset,
+      cellW: s.cellW,
+      cellH: s.cellH,
       inProgress: false,
       speedTimer: s.speedTimer,
       tool: s.tool,
@@ -300,8 +302,7 @@ class Graph extends Component {
     }));
   };
 
-  sleep = (ms) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   run = async () => {
     if (this.state.inProgress) return;
@@ -323,7 +324,6 @@ class Graph extends Component {
       status: `${algoMeta.label} running… ${starts.length} source${starts.length > 1 ? "s" : ""}, ${ends.length} target${ends.length > 1 ? "s" : ""}.`,
     });
 
-    // Run the algorithm synchronously (cheap) — it returns the full trace.
     const result = runAlgorithm(algorithm, { cells, starts, ends, rows, cols });
 
     // Animate frames.
@@ -331,12 +331,6 @@ class Graph extends Component {
     const frontier = new Array(rows * cols).fill(-1);
     for (const frame of result.frames) {
       if (this.cancelRequested) break;
-      // Demote any cells that are explored from previous frame
-      for (let i = 0; i < frontier.length; i++) {
-        if (frontier[i] !== -1 && explored[i] === -1) {
-          // they remain frontier until next frame; explicit nothing
-        }
-      }
       for (const { idx, ownerStart } of frame.newlyFrontier) {
         if (explored[idx] === -1) frontier[idx] = ownerStart;
       }
@@ -365,7 +359,6 @@ class Graph extends Component {
       return;
     }
 
-    // Animate the winning path.
     const pathSet = new Set();
     for (const idx of result.path) {
       if (this.cancelRequested) break;
@@ -406,6 +399,8 @@ class Graph extends Component {
       status,
       winnerInfo,
       panelWidth,
+      cellW,
+      cellH,
     } = this.state;
     const algorithm = this.props.algorithm || "bfs";
 
@@ -452,8 +447,8 @@ class Graph extends Component {
             <Grid
               rows={this.state.row}
               cols={this.state.col}
-              boxSize={this.BOXSIZE}
-              sizeOffset={this.state.sizeOffset}
+              cellW={cellW}
+              cellH={cellH}
               cells={cells}
               starts={starts}
               ends={ends}

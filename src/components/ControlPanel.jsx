@@ -17,6 +17,95 @@ const speedToSliderPct = (ms) =>
 const sliderPctToSpeed = (pct) =>
   Math.round(SPEED_MAX_MS - (pct / 100) * (SPEED_MAX_MS - SPEED_MIN_MS));
 
+// ---- Custom algorithm dropdown ----
+// Native <select> can't render a side-popover with the description while the
+// user navigates options. This component builds the same selection UX with
+// HTML so each menu item can show its full description in a panel to the
+// right of the cursor on hover.
+class AlgoDropdown extends Component {
+  state = { open: false, hoveredKey: null };
+
+  componentDidMount() {
+    document.addEventListener("mousedown", this.onDocMouseDown);
+  }
+  componentWillUnmount() {
+    document.removeEventListener("mousedown", this.onDocMouseDown);
+  }
+  onDocMouseDown = (e) => {
+    if (!this.rootRef) return;
+    if (!this.rootRef.contains(e.target)) {
+      this.setState({ open: false, hoveredKey: null });
+    }
+  };
+
+  toggle = () => {
+    if (this.props.disabled) return;
+    this.setState((s) => ({ open: !s.open, hoveredKey: null }));
+  };
+
+  pick = (key) => {
+    this.setState({ open: false, hoveredKey: null });
+    this.props.onChange(key);
+  };
+
+  render() {
+    const { value, disabled } = this.props;
+    const current = ALGORITHMS[value] || ALGORITHMS.bfs;
+    const { open, hoveredKey } = this.state;
+    const hovered = hoveredKey ? ALGORITHMS[hoveredKey] : null;
+
+    return (
+      <div className="cp-dd" ref={(r) => (this.rootRef = r)}>
+        <button
+          className={"cp-dd-trigger" + (open ? " open" : "")}
+          onClick={this.toggle}
+          disabled={disabled}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+        >
+          <span className="cp-dd-trigger-label">{current.label}</span>
+          <span className="cp-dd-chevron" aria-hidden="true">▾</span>
+        </button>
+        {open && (
+          <div className="cp-dd-menu" role="listbox">
+            {Object.entries(ALGORITHMS).map(([key, meta]) => (
+              <div
+                key={key}
+                role="option"
+                aria-selected={key === value}
+                className={"cp-dd-item" + (key === value ? " selected" : "")}
+                onClick={() => this.pick(key)}
+                onMouseEnter={() => this.setState({ hoveredKey: key })}
+              >
+                <span className="cp-dd-item-label">{meta.label}</span>
+                <span className="cp-dd-item-tag">
+                  {meta.weighted ? "weighted" : "unweighted"}
+                </span>
+              </div>
+            ))}
+            {hovered && (
+              <div className="cp-dd-desc-pop" role="tooltip">
+                <div className="cp-dd-desc-head">
+                  <span className="cp-dd-desc-title">{hovered.label}</span>
+                  <span
+                    className={
+                      "cp-dd-desc-tag " +
+                      (hovered.weighted ? "tag-weighted" : "tag-unweighted")
+                    }
+                  >
+                    {hovered.weighted ? "weighted" : "unweighted"}
+                  </span>
+                </div>
+                <div className="cp-dd-desc-body">{hovered.description}</div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+
 class ControlPanel extends Component {
   state = {
     showAddWall: false,
@@ -91,8 +180,6 @@ class ControlPanel extends Component {
 
     const algoMeta = ALGORITHMS[algorithm] || ALGORITHMS.bfs;
     const showWeights = algoMeta.weighted;
-    // For unweighted algorithms, only show the built-in Hard Wall — extra
-    // weighted terrain types have no semantic effect and just clutter the UI.
     const visibleWallTypes = showWeights
       ? wallTypes
       : wallTypes.filter((w) => w.builtin);
@@ -102,23 +189,12 @@ class ControlPanel extends Component {
       <aside className="control-panel" style={{ width: panelWidth }}>
         <section className="cp-section">
           <h3 className="cp-title">Algorithm</h3>
-          <select
-            className="cp-select"
+          <AlgoDropdown
             value={algorithm}
-            onChange={(e) => onAlgorithmChange(e.target.value)}
+            onChange={onAlgorithmChange}
             disabled={inProgress}
-          >
-            {Object.entries(ALGORITHMS).map(([key, meta]) => (
-              <option key={key} value={key}>
-                {meta.label}
-              </option>
-            ))}
-          </select>
-          <div className="cp-algo-hint">
-            {showWeights
-              ? "Weighted: terrain weights apply."
-              : "Unweighted: only the Hard Wall blocks; extra terrains aren't shown."}
-          </div>
+          />
+          <div className="cp-algo-hint">{algoMeta.description}</div>
         </section>
 
         <section className="cp-section">
@@ -135,6 +211,9 @@ class ControlPanel extends Component {
                 {TOOL_LABELS[t]}
               </button>
             ))}
+          </div>
+          <div className="cp-tool-hint">
+            Tip: clicking an already-placed start/end with that tool removes it.
           </div>
         </section>
 

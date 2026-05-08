@@ -1,15 +1,19 @@
 import React from "react";
 import "../style/Graph.css";
 
+// Width and height are passed in pixels so the grid tiles its container
+// exactly (no leftover gap at the right or bottom). Glyph line-height
+// follows cellH so the centered number/star stays aligned.
 const Box = (props) => {
-  const width = props.offsetBool
-    ? props.boxSize + props.allBoxOffset + 1
-    : props.boxSize + props.allBoxOffset;
+  const { cellW, cellH, role, bgOverride, glyph } = props;
+  const style = {
+    width: cellW,
+    height: cellH,
+    lineHeight: cellH + "px",
+  };
+  if (bgOverride) style.background = bgOverride;
 
-  const style = { width };
-  if (props.bgOverride) style.background = props.bgOverride;
-
-  const className = "cell cell-" + props.role;
+  const className = "cell cell-" + role;
 
   return (
     <button
@@ -20,7 +24,7 @@ const Box = (props) => {
       onPointerDown={props.onPointerDown}
       onPointerUp={props.onPointerUp}
     >
-      {props.glyph && <span className="cell-glyph">{props.glyph}</span>}
+      {glyph && <span className="cell-glyph">{glyph}</span>}
     </button>
   );
 };

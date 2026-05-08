@@ -9,15 +9,12 @@ const buildWallColorMap = (wallTypes) => {
 };
 
 class Grid extends Component {
-  renderBox(idx, coli) {
-    const { cells, starts, ends, exploredOwner, frontierOwner, pathSet, wallTypes } = this.props;
-    const allBoxOffset = Math.floor(this.props.sizeOffset / this.props.cols);
-    const offsetBool = coli < (this.props.sizeOffset % this.props.cols) - 1;
+  renderBox(idx) {
+    const { cells, starts, ends, exploredOwner, frontierOwner, pathSet, wallTypes, cellW, cellH } = this.props;
 
     let role = "empty";
     let bgOverride = null;
     let glyph = null;
-    let ownerStart = -1;
 
     const startIdx = starts.indexOf(idx);
     const endIdx = ends.indexOf(idx);
@@ -33,13 +30,11 @@ class Grid extends Component {
 
     if (exploredOwner[idx] !== -1 && role !== "wall") {
       role = "explored";
-      ownerStart = exploredOwner[idx];
-      bgOverride = tintForStart(ownerStart);
+      bgOverride = tintForStart(exploredOwner[idx]);
     }
     if (frontierOwner[idx] !== -1 && role !== "wall") {
       role = "frontier";
-      ownerStart = frontierOwner[idx];
-      bgOverride = tintForStart(ownerStart);
+      bgOverride = tintForStart(frontierOwner[idx]);
     }
 
     if (pathSet.has(idx)) {
@@ -60,10 +55,8 @@ class Grid extends Component {
     return (
       <Box
         key={idx}
-        id={idx}
-        boxSize={this.props.boxSize}
-        allBoxOffset={allBoxOffset}
-        offsetBool={offsetBool}
+        cellW={cellW}
+        cellH={cellH}
         role={role}
         bgOverride={bgOverride}
         glyph={glyph}
@@ -82,8 +75,8 @@ class Grid extends Component {
     const arrRow = Array(ROW).fill(null);
     const arrCol = Array(COL).fill(null);
     const boxRows = arrRow.map((_, indexRow) => (
-      <div className="grid-row" id={indexRow} key={indexRow}>
-        {arrCol.map((_, indexCol) => this.renderBox(indexRow * COL + indexCol, indexCol))}
+      <div className="grid-row" key={indexRow}>
+        {arrCol.map((_, indexCol) => this.renderBox(indexRow * COL + indexCol))}
       </div>
     ));
     return <div className="grid-wrap" onPointerLeave={this.props.onPointerUp}>{boxRows}</div>;

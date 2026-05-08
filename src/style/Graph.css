@@ -38,12 +38,19 @@ body {
 .site-nav .nav-link:hover {
   color: #ff7e5f !important;
 }
-.nav-tagline {
+.nav-selected-algo {
   margin-left: auto;
-  color: #6e7497;
-  font-size: 12px;
-  font-style: italic;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  background: rgba(255, 126, 95, 0.08);
+  border: 1px solid rgba(255, 126, 95, 0.25);
+  padding: 4px 12px;
+  border-radius: 14px;
 }
+.nav-selected-label { color: #8c93b8; font-size: 12px; letter-spacing: 0.4px; }
+.nav-selected-value { color: #ff7e5f; font-weight: 700; }
 
 /* ---- Layout ---- */
 .graph {
@@ -122,30 +129,112 @@ body.cp-resizing .cp-resizer {
   background: rgba(65, 234, 212, 0.35);
 }
 body.cp-resizing { cursor: col-resize; user-select: none; }
-/* Algorithm dropdown — matches the dark/neon theme. */
-.cp-select {
+/* Custom algorithm dropdown — matches the dark/neon theme and shows
+   per-option descriptions in a popover on the right while hovering. */
+.cp-dd { position: relative; width: 100%; }
+.cp-dd-trigger {
   width: 100%;
   background: #1f2a52;
   color: #e7eaf6;
   border: 1px solid #2c3866;
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #41ead4 50%),
-    linear-gradient(135deg, #41ead4 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
 }
-.cp-select:hover:not(:disabled) { border-color: #ff7e5f; }
-.cp-select:focus { outline: none; border-color: #41ead4; }
-.cp-select:disabled { opacity: 0.5; cursor: not-allowed; }
-.cp-select option { background: #1f2a52; color: #e7eaf6; }
+.cp-dd-trigger:hover:not(:disabled) { border-color: #ff7e5f; }
+.cp-dd-trigger:focus { outline: none; border-color: #41ead4; }
+.cp-dd-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+.cp-dd-trigger.open { border-color: #41ead4; }
+.cp-dd-trigger-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cp-dd-chevron { color: #41ead4; font-size: 12px; transition: transform 0.15s ease; }
+.cp-dd-trigger.open .cp-dd-chevron { transform: rotate(180deg); }
+.cp-dd-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #131a36;
+  border: 1px solid #2c3866;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  padding: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.cp-dd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #d0d4e6;
+}
+.cp-dd-item:hover { background: rgba(65, 234, 212, 0.1); color: #fff; }
+.cp-dd-item.selected { background: rgba(255, 126, 95, 0.15); color: #ff7e5f; font-weight: 700; }
+.cp-dd-item-label { flex: 1; }
+.cp-dd-item-tag {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #8c93b8;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-family: Menlo, monospace;
+}
+/* Description popover that floats to the right of the dropdown menu while
+   the user hovers an option. Positioned outside the menu so it doesn't get
+   clipped by the menu's own scroll/overflow. */
+.cp-dd-desc-pop {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 0;
+  width: 280px;
+  background: #0f1530;
+  border: 1px solid rgba(65, 234, 212, 0.4);
+  border-radius: 6px;
+  padding: 12px 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 101;
+}
+.cp-dd-desc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cp-dd-desc-title { color: #41ead4; font-weight: 700; font-size: 13px; }
+.cp-dd-desc-tag {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-family: Menlo, monospace;
+}
+.tag-weighted { background: rgba(255, 212, 0, 0.15); color: #ffd400; }
+.tag-unweighted { background: rgba(176, 188, 255, 0.15); color: #b0bcff; }
+.cp-dd-desc-body { font-size: 12px; line-height: 1.5; color: #d0d4e6; }
+.cp-tool-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #6e7497;
+  font-style: italic;
+}
 /* Slow ↔ Fast labels under the speed slider. */
 .cp-speed-labels {
   display: flex;
@@ -369,27 +458,23 @@ body.cp-resizing { cursor: col-resize; user-select: none; }
   flex: 1;
   padding: 12px;
   overflow: auto;
+  background: #1f2330; /* dark grey play area */
 }
 .grid-wrap { user-select: none; }
-.grid-row:after {
-  clear: both;
-  content: "";
-  display: table;
-}
+.grid-row { display: flex; flex-wrap: nowrap; }
 .cell {
+  /* width, height and line-height are set inline by Box.jsx so the grid
+     tiles its container exactly (no leftover gap on right or bottom). */
   background: #171c36;
   border: 1px solid rgba(180, 31, 173, 0.55);
-  float: left;
   font-size: 11px;
   font-weight: bold;
-  line-height: 26px;
-  height: 26px;
   margin-right: -1px;
   margin-top: -1px;
   padding: 0;
   text-align: center;
-  width: 25px;
   position: relative;
+  flex-shrink: 0;
   z-index: 0;
   color: #0a0e22;
   cursor: pointer;
